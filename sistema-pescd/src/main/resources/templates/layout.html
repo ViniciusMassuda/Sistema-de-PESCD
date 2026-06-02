@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html th:fragment="layout (content)" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>PESCD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">PESCD</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/}" th:text="#{label.home}">Home</a></li>
+                    <li sec:authorize="hasRole('ADMIN')" class="nav-item"><a class="nav-link" th:href="@{/admin/usuarios}" th:text="#{label.users}">Users</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="text-white me-3" sec:authorize="isAuthenticated()">
+                        [[${#authentication.name}]] ([[${#authentication.authorities[0].authority}]])
+                    </span>
+                    <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn btn-outline-light btn-sm" th:text="#{label.login}">Login</a>
+                    <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+                        <button type="submit" class="btn btn-outline-light btn-sm" th:text="#{label.logout}">Logout</button>
+                    </form>
+                    <div class="ms-3">
+                        <a th:href="@{/(lang=pt)}" class="text-white small">PT</a> |
+                        <a th:href="@{/(lang=en)}" class="text-white small">EN</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:replace="${content}"></div>
+    </div>
+</body>
+</html>

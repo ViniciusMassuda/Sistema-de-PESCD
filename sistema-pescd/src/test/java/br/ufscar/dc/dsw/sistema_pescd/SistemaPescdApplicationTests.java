@@ -9,5 +9,4 @@ class SistemaPescdApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
