@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::content})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <div class="container mt-4">
+        <h2 class="mb-4" th:text="#{aluno.minhas_ofertas}">Minhas Ofertas</h2>
+
+        <div th:if="${semOfertas}" class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="#{aluno.sem_ofertas}">Você não está inscrito em nenhuma oferta.</span>
+        </div>
+
+        <div th:unless="${semOfertas}">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-primary">
+                    <tr>
+                        <th th:text="#{label.name}">Nome da Oferta</th>
+                        <th th:text="#{label.semester}">Semestre</th>
+                        <th th:text="#{label.startDate}">Data Início</th>
+                        <th th:text="#{label.endDate}">Data Fim</th>
+                        <th th:text="#{label.responsible}">Professor Responsável</th>
+                        <th th:text="#{aluno.status_oferta}">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="oferta : ${ofertas}">
+                        <td th:text="${oferta.nomeOferta}">Nome</td>
+                        <td th:text="${oferta.semestre}">Semestre</td>
+                        <td th:text="${#temporals.format(oferta.dataInicio, 'dd/MM/yyyy')}">Início</td>
+                        <td th:text="${#temporals.format(oferta.dataFim, 'dd/MM/yyyy')}">Fim</td>
+                        <td th:text="${oferta.professorResponsavel}">Professor</td>
+                        <td>
+                                    <span th:class="'badge ' + (${oferta.statusOferta == 'Em andamento'} ? 'bg-success' : (${oferta.statusOferta == 'Atrasada'} ? 'bg-danger' : 'bg-secondary'))"
+                                          th:text="#{${'aluno.status.' + (oferta.statusOferta == 'Em andamento' ? 'em_andamento' : (oferta.statusOferta == 'Atrasada' ? 'atrasada' : 'nao_iniciada'))}}">
+                                        Status
+                                    </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
