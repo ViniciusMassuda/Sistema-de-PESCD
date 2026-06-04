@@ -11,11 +11,13 @@ public class OfertaAlunoResponseDTO {
     private LocalDate dataFim;
     private String professorResponsavel;
     private String statusOferta;
+    private String statusAluno;  // CAMPO ADICIONADO
 
     public OfertaAlunoResponseDTO() {}
 
     public OfertaAlunoResponseDTO(Long id, String nomeOferta, String semestre, LocalDate dataInicio,
-                                  LocalDate dataFim, String professorResponsavel, String statusOferta) {
+                                  LocalDate dataFim, String professorResponsavel, String statusOferta,
+                                  String statusAluno) {
         this.id = id;
         this.nomeOferta = nomeOferta;
         this.semestre = semestre;
@@ -23,6 +25,7 @@ public class OfertaAlunoResponseDTO {
         this.dataFim = dataFim;
         this.professorResponsavel = professorResponsavel;
         this.statusOferta = statusOferta;
+        this.statusAluno = statusAluno;
     }
 
     // Getters e Setters
@@ -46,4 +49,7 @@ public class OfertaAlunoResponseDTO {
 
     public String getStatusOferta() { return statusOferta; }
     public void setStatusOferta(String statusOferta) { this.statusOferta = statusOferta; }
+
+    public String getStatusAluno() { return statusAluno; }      // NOVO
+    public void setStatusAluno(String statusAluno) { this.statusAluno = statusAluno; }  // NOVO
 }

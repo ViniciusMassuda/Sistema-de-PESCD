@@ -4,7 +4,9 @@
 <body>
 <div th:fragment="content">
     <div class="container mt-4">
-        <h2 class="mb-4" th:text="#{aluno.minhas_ofertas}">Minhas Ofertas</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 th:text="#{aluno.minhas_ofertas}">Minhas Ofertas</h2>
+        </div>
 
         <div th:if="${semOfertas}" class="alert alert-warning" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -22,6 +24,7 @@
                         <th th:text="#{label.endDate}">Data Fim</th>
                         <th th:text="#{label.responsible}">Professor Responsável</th>
                         <th th:text="#{aluno.status_oferta}">Status</th>
+                        <th th:text="#{label.actions}">Ações</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -32,10 +35,30 @@
                         <td th:text="${#temporals.format(oferta.dataFim, 'dd/MM/yyyy')}">Fim</td>
                         <td th:text="${oferta.professorResponsavel}">Professor</td>
                         <td>
-                                    <span th:class="'badge ' + (${oferta.statusOferta == 'Em andamento'} ? 'bg-success' : (${oferta.statusOferta == 'Atrasada'} ? 'bg-danger' : 'bg-secondary'))"
-                                          th:text="#{${'aluno.status.' + (oferta.statusOferta == 'Em andamento' ? 'em_andamento' : (oferta.statusOferta == 'Atrasada' ? 'atrasada' : 'nao_iniciada'))}}">
-                                        Status
-                                    </span>
+                            <span th:class="'badge ' + (${oferta.statusOferta == 'Em andamento'} ? 'bg-success' : (${oferta.statusOferta == 'Atrasada'} ? 'bg-danger' : 'bg-secondary'))"
+                                  th:text="#{${'aluno.status.' + (oferta.statusOferta == 'Em andamento' ? 'em_andamento' : (oferta.statusOferta == 'Atrasada' ? 'atrasada' : 'nao_iniciada'))}}">
+                                Status
+                            </span>
+                        </td>
+                        <td>
+                            <!-- Botão dinâmico baseado no status da oferta E status do aluno -->
+                            <div th:if="${oferta.statusOferta == 'Em andamento'}">
+                                <!-- Status "não enviado" - mostra botão habilitado -->
+                                <a th:if="${oferta.statusAluno == 'não enviado'}"
+                                   th:href="@{/aluno/oferta/{id}/plano(id=${oferta.id})}"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{aluno.enviar_plano.botao_nao_enviado}">Plano</span>
+                                </a>
+                                <!-- Status "plano enviado" - mostra botão desabilitado -->
+                                <span th:if="${oferta.statusAluno == 'plano enviado'}"
+                                      class="btn btn-sm btn-secondary disabled">
+                                    <i class="bi bi-check-circle"></i> <span th:text="#{aluno.enviar_plano.botao_enviado}">Plano enviado</span>
+                                </span>
+                            </div>
+                            <!-- Oferta não está em andamento -->
+                            <span th:if="${oferta.statusOferta != 'Em andamento'}" class="text-muted">
+                                <i class="bi bi-lock"></i> <span th:text="#{aluno.enviar_plano.indisponivel}">Indisponível</span>
+                            </span>
                         </td>
                     </tr>
                     </tbody>
