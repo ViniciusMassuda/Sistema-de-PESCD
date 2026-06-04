@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::content})}">
+<body>
+
+<div th:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Ofertas</h2>
+        <a th:href="@{/secretario/ofertas/cadastrar}" class="btn btn-primary">
+            Nova Oferta
+        </a>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <table class="table table-striped text-center align-middle">
+        <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Semestre</th>
+            <th>Data Início</th>
+            <th>Data Fim</th>
+            <th>Criado em</th>
+            <th>Criado por</th>
+            <th>Professor Responsável</th>
+            <th>Status da Oferta</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="o : ${ofertas}">
+            <td th:text="${o.nome}"></td>
+            <td th:text="${o.semestre}"></td>
+            <td th:text="${o.dataInicio}"></td>
+            <td th:text="${o.dataFim}"></td>
+
+            <td th:text="${o.dataCriacao != null ? #temporals.format(o.dataCriacao, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+            <td th:text="${o.usuarioCriador != null ? o.usuarioCriador : '—'}"></td>
+
+            <td th:text="${o.professorResponsavel != null ? o.professorResponsavel.nome : '—'}"></td>
+
+            <td>
+                <span class="badge"
+                      th:classappend="${o.statusCalculado == 'Em andamento' ? 'bg-success' : (o.statusCalculado == 'Em atraso' ? 'bg-danger' : (o.statusCalculado == 'Concluída' ? 'bg-dark' : 'bg-warning text-dark'))}"
+                      th:text="${o.statusCalculado}">
+                </span>
+            </td>
+
+            <td>
+                <a th:href="@{/secretario/ofertas/{id}/detalhes(id=${o.id})}"
+                   class="btn btn-sm btn-warning">
+                    Gerenciar Alunos
+                </a>
+
+                <span th:if="${o.statusCalculado == 'Aguardando encerramento do secretário' or o.statusCalculado == 'Em andamento'}">
+                    <form th:action="@{/secretario/ofertas/{id}/encerrar(id=${o.id})}" method="post" style="display:inline;"
+                          onsubmit="return confirm('S.04 - Confirmação: Deseja realmente encerrar esta oferta e atribuir os créditos aos alunos?');">
+                        <input type="hidden" name="instrucoes" value="Instruções normativas da Administração Central do PESCD - Atribuição Automática de Créditos." />
+                        <button type="submit" class="btn btn-sm btn-danger ms-1">
+                            Encerrar
+                        </button>
+                    </form>
+                </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

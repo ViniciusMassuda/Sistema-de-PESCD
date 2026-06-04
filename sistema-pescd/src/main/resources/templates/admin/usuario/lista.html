@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::content})}">
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 th:text="#{label.users}">Users</h2>
+            <a th:href="@{/admin/usuarios/cadastrar}" class="btn btn-primary" th:text="#{label.newUser}">New User</a>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th th:text="#{label.name}">Name</th>
+                    <th th:text="#{label.username}">Username</th>
+                    <th th:text="#{label.role}">Role</th>
+                    <th th:text="#{label.actions}">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u : ${usuarios}">
+                    <td th:text="${u.nome}"></td>
+                    <td th:text="${u.username}"></td>
+                    <td th:text="${u.role}"></td>
+                    <td>
+                        <a th:href="@{/admin/usuarios/editar/{id}(id=${u.id})}" class="btn btn-sm btn-warning" th:text="#{label.edit}">Edit</a>
+                        <a th:href="@{/admin/usuarios/excluir/{id}(id=${u.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')" th:text="#{label.delete}">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

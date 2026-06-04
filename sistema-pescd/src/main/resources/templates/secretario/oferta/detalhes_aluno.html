@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::content})}">
+<body>
+
+<div th:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Histórico do Aluno no PESCD</h2>
+        <a th:href="@{/secretario/ofertas/{id}/detalhes(id=${inscricao.oferta.id})}" class="btn btn-secondary">
+            Voltar para Acompanhamento
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white font-weight-bold">Dados do Aluno Inscrito</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Nome Completo:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
+                    <p><strong>E-mail de Usuário:</strong> <span th:text="${inscricao.aluno.username}"></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Oferta Vinculada:</strong> <span th:text="${inscricao.oferta.nome}">Oferta</span> (Semestre <span th:text="${inscricao.oferta.semestre}"></span>)</p>
+                    <p><strong>Status Geral:</strong> <span class="badge bg-info text-dark" th:text="${inscricao.status != null ? inscricao.status : 'não enviado'}">não enviado</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white font-weight-bold">Histórico de Alterações de Status (Logs)</div>
+        <div class="card-body">
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Data/Hora da Modificação</th>
+                    <th>Status Anterior</th>
+                    <th>Novo Status</th>
+                    <th>Responsável</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>02/06/2026 19:30:00</td>
+                    <td><span class="text-muted">—</span></td>
+                    <td><span class="badge bg-info text-dark" th:text="${inscricao.status != null ? inscricao.status : 'não enviado'}">não enviado</span></td>
+                    <td>Sistema (Matrícula)</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

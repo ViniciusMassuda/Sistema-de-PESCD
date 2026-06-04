@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::content})}">
+<body>
+
+<div th:fragment="content">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 th:text="'Alunos da Oferta: ' + ${oferta.nome}">Gerenciar Alunos</h2>
+    <a th:href="@{/secretario/ofertas}" class="btn btn-secondary">Voltar para Ofertas</a>
+  </div>
+
+  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+  <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white font-weight-bold">Adicionar Aluno Manualmente</div>
+        <div class="card-body">
+          <form th:action="@{/secretario/ofertas/{id}/alunos/manual(id=${oferta.id})}" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Nome Completo</label>
+              <input type="text" name="nome" class="form-control" required placeholder="Ex: João Silva">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">E-mail (Username)</label>
+              <input type="email" name="email" class="form-control" required placeholder="Ex: joao@ufscar.br">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Senha</label>
+              <input type="password" name="senha" class="form-control" required placeholder="Digite a senha">
+            </div>
+            <button type="submit" class="btn btn-success w-100">Adicionar Aluno</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white font-weight-bold">Importar Alunos via CSV</div>
+        <div class="card-body">
+          <form th:action="@{/secretario/ofertas/{id}/alunos/csv(id=${oferta.id})}" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Selecione o arquivo .csv</label>
+              <input type="file" name="file" class="form-control" accept=".csv" required>
+              <div class="form-text text-muted mt-2">
+                <strong>Formato esperado do cabeçalho:</strong><br>
+                <code>RA, NOME_COMPLETO, EMAIL</code>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Fazer Upload e Importar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mt-3">
+    <div class="card-header bg-dark text-white font-weight-bold">Alunos Matriculados e Status de Andamento</div>
+    <div class="card-body">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="table-light">
+        <tr>
+          <th>Nome</th>
+          <th>E-mail (Usuário)</th>
+          <th>Status no PESCD</th> <th>Ações</th> </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ins : ${inscricoes}">
+          <td th:text="${ins.aluno.nome}">Nome do Aluno</td>
+          <td th:text="${ins.aluno.username}">Email</td>
+          <td>
+            <span class="badge bg-info text-dark font-weight-normal" th:text="${ins.status}"></span>
+          </td>
+          <td>
+            <a th:href="@{/secretario/inscricao/{id}/detalhes(id=${ins.id})}" class="btn btn-sm btn-outline-primary py-0">
+              Ver Detalhes
+            </a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(inscricoes)}">
+          <td colspan="4" class="text-center text-muted py-4">
+            Nenhum aluno inscrito nesta oferta até o momento.
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
