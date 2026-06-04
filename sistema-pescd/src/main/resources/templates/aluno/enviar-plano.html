@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html th:replace="~{layout :: layout(~{::content})}"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 th:text="#{aluno.enviar_plano.titulo}">Enviar Plano de Trabalho</h2>
+            <a th:href="@{/aluno/ofertas}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> <span th:text="#{label.back}">Voltar</span>
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0" th:text="#{aluno.enviar_plano.subtitulo}">Dados do Plano de Trabalho</h5>
+            </div>
+            <div class="card-body">
+                <!-- Mensagem de erro vinda do backend -->
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <form th:action="@{/aluno/oferta/{id}/plano(id=${ofertaId})}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      th:object="${planoRequest}">
+
+                    <div class="mb-3">
+                        <label for="codigoDisciplina" class="form-label" th:text="#{aluno.enviar_plano.codigo}">Código da Disciplina</label>
+                        <input type="text" class="form-control" id="codigoDisciplina"
+                               th:field="*{codigoDisciplina}" required>
+                        <div class="form-text" th:text="#{aluno.enviar_plano.codigo_help}">Ex: DC-001</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nomeDisciplina" class="form-label" th:text="#{aluno.enviar_plano.nome}">Nome da Disciplina</label>
+                        <input type="text" class="form-control" id="nomeDisciplina"
+                               th:field="*{nomeDisciplina}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cursoDisciplina" class="form-label" th:text="#{aluno.enviar_plano.curso}">Curso da Disciplina</label>
+                        <input type="text" class="form-control" id="cursoDisciplina"
+                               th:field="*{cursoDisciplina}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="professorSupervisorId" class="form-label" th:text="#{aluno.enviar_plano.professor_supervisor}">Professor Supervisor</label>
+                        <select class="form-select" id="professorSupervisorId"
+                                th:field="*{professorSupervisorId}" required>
+                            <option value="" th:text="#{aluno.enviar_plano.selecione}">Selecione um professor</option>
+                            <option th:each="prof : ${professores}"
+                                    th:value="${prof.id}"
+                                    th:text="${prof.nome}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="arquivo" class="form-label" th:text="#{aluno.enviar_plano.arquivo}">Plano de Trabalho (PDF)</label>
+                        <input type="file" class="form-control" id="arquivo"
+                               name="arquivo" accept="application/pdf" required>
+                        <div class="form-text" th:text="#{aluno.enviar_plano.arquivo_help}">PDF com no máximo 5MB</div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/aluno/ofertas}" class="btn btn-secondary" th:text="#{label.cancel}">Cancelar</a>
+                        <button type="submit" id="submitBtn" class="btn btn-primary" th:text="#{label.send}">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
