@@ -13,6 +13,12 @@ public interface InscricaoDAO extends JpaRepository<Inscricao, Long> {
 
     // ADICIONADO PARA A S.02: Evita matricular o mesmo aluno duas vezes na mesma oferta
     boolean existsByOfertaAndAluno(Oferta oferta, Usuario aluno);
+
+    // Busca todas as inscrições de um aluno (usado no AL.01 e AL.02)
+    List<Inscricao> findByAlunoId(Long alunoId);
+
+    // Busca inscrição por aluno e oferta (usado no AL.02)
+    java.util.Optional<Inscricao> findByAlunoAndOferta(Usuario aluno, Oferta oferta);
 }
 
 

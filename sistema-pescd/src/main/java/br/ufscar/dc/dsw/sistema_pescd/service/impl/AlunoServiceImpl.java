@@ -80,7 +80,7 @@ public class AlunoServiceImpl implements IAlunoService {
             throw new RuntimeException("Só é possível enviar plano para ofertas em andamento");
         }
 
-        if (inscricao.getStatusAluno() != Inscricao.StatusAluno.NAO_ENVIADO) {
+        if (inscricao.getStatus() != Inscricao.StatusAluno.NAO_ENVIADO) {
             throw new RuntimeException("Plano já foi enviado para esta oferta");
         }
 
@@ -112,7 +112,7 @@ public class AlunoServiceImpl implements IAlunoService {
         planoTrabalho = planoTrabalhoDAO.save(planoTrabalho);
 
         inscricao.setPlanoTrabalho(planoTrabalho);
-        inscricao.setStatusAluno(Inscricao.StatusAluno.PLANO_ENVIADO);
+        inscricao.setStatus(Inscricao.StatusAluno.PLANO_ENVIADO);
         inscricao.setDataEnvioPlano(LocalDateTime.now());
         inscricaoDAO.save(inscricao);
 
@@ -131,7 +131,7 @@ public class AlunoServiceImpl implements IAlunoService {
             Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
             if (inscricao == null) return false;
 
-            return inscricao.getStatusAluno() == Inscricao.StatusAluno.NAO_ENVIADO;
+            return inscricao.getStatus() == Inscricao.StatusAluno.NAO_ENVIADO;
         } catch (Exception e) {
             return false;
         }

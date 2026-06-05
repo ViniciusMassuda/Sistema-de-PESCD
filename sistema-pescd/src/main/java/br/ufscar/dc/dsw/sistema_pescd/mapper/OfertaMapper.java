@@ -5,6 +5,8 @@ import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.dto.response.OfertaAlunoResponseDTO;
 import org.springframework.stereotype.Component;
 
+import static br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao.StatusAluno.*;
+
 @Component
 public class OfertaMapper {
 
@@ -27,8 +29,8 @@ public class OfertaMapper {
         dto.setStatusOferta(statusOferta);
 
         // Define o status do aluno (para o botão na tabela)
-        if (inscricao != null && inscricao.getStatusAluno() != null) {
-            switch (inscricao.getStatusAluno()) {
+        if (inscricao != null && inscricao.getStatus() != null) {
+            switch (inscricao.getStatus()) {
                 case NAO_ENVIADO:
                     dto.setStatusAluno("não enviado");
                     break;
@@ -39,7 +41,7 @@ public class OfertaMapper {
                     dto.setStatusAluno("plano aprovado");
                     break;
                 default:
-                    dto.setStatusAluno(inscricao.getStatusAluno().name().toLowerCase().replace("_", " "));
+                    dto.setStatusAluno(inscricao.getStatus().name().toLowerCase().replace("_", " "));
                     break;
             }
         } else {

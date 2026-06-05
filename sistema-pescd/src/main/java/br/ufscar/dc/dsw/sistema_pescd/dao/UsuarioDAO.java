@@ -10,6 +10,8 @@ public interface UsuarioDAO extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByUsername(String username);
     // Filtra e traz uma lista de usuários com base nos seus papéis (usado para listar os professores)
     List<Usuario> findByRoleIn(List<Usuario.Role> roles);
+    //Busca direta por um papel específico
+    List<Usuario> findByRole(Usuario.Role role);
 }
 
 

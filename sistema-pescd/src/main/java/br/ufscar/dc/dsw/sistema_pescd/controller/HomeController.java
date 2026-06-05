@@ -12,7 +12,9 @@ public class HomeController {
     public String professorHome() { return "professor/home"; }
 
     @GetMapping("/aluno/home")
-    public String alunoHome() { return "aluno/home"; }
+    public String alunoHome() {
+        return "redirect:/aluno/ofertas";
+    }
 }
 
 
