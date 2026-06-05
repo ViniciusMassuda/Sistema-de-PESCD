@@ -41,14 +41,14 @@ public class DataLoader implements CommandLineRunner {
                 Inscricao inscricao = new Inscricao();
                 inscricao.setAluno(aluno);
                 inscricao.setOferta(oferta);
-                inscricao.setStatusAluno(Inscricao.StatusAluno.NAO_ENVIADO);
+                inscricao.setStatus(Inscricao.StatusAluno.NAO_ENVIADO);
 
                 inscricaoDAO.save(inscricao);
 
                 System.out.println(" Inscrição criada:");
                 System.out.println("   Aluno: " + aluno.getNome() + " (ID: " + aluno.getId() + ")");
                 System.out.println("   Oferta: " + oferta.getNome() + " (ID: " + oferta.getId() + ")");
-                System.out.println("   Status: " + inscricao.getStatusAluno());
+                System.out.println("   Status: " + inscricao.getStatus());
             } else {
                 System.out.println("Aluno ou Oferta não encontrados!");
                 System.out.println("   Aluno ID 4 existe? " + (aluno != null));

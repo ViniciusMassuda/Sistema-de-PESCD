@@ -1,6 +1,7 @@
 package br.ufscar.dc.dsw.sistema_pescd.domain;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Inscricao")
@@ -20,9 +21,16 @@ public class Inscricao {
     @JoinColumn(name = "oferta_id", nullable = false)
     private Oferta oferta;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "plano_trabalho_id")
+    private PlanoTrabalho planoTrabalho;
+
+    private LocalDateTime dataEnvioPlano;
+    private LocalDateTime dataAprovacaoPlano;
+
     // ADICIONADO PARA A S.03 (RN-2): Armazena o status do andamento do aluno
-    @Column(name = "status", nullable = false)
-    private String status = "não enviado"; // Inicia com o padrão exigido
+    //@Column(name = "status", nullable = false)
+    //private String status = "não enviado"; // Inicia com o padrão exigido
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -31,9 +39,46 @@ public class Inscricao {
     public void setAluno(Usuario aluno) { this.aluno = aluno; }
     public Oferta getOferta() { return oferta; }
     public void setOferta(Oferta oferta) { this.oferta = oferta; }
+
+    public PlanoTrabalho getPlanoTrabalho() { return planoTrabalho; }
+    public void setPlanoTrabalho(PlanoTrabalho planoTrabalho) { this.planoTrabalho = planoTrabalho; }
+
+    public LocalDateTime getDataEnvioPlano() { return dataEnvioPlano; }
+    public void setDataEnvioPlano(LocalDateTime dataEnvioPlano) { this.dataEnvioPlano = dataEnvioPlano; }
+
+    public LocalDateTime getDataAprovacaoPlano() { return dataAprovacaoPlano; }
+    public void setDataAprovacaoPlano(LocalDateTime dataAprovacaoPlano) { this.dataAprovacaoPlano = dataAprovacaoPlano; }
+
     // Getters e Setters do Status
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    // Alterado para ENUM para maior segurança de tipos
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private StatusAluno status = StatusAluno.NAO_ENVIADO;
+
+    // Getters e Setters do Status
+    public StatusAluno getStatus() { return status; }
+    public void setStatus(StatusAluno status) { this.status = status; }
+
+    // Enum para status do aluno
+    public enum StatusAluno {
+        NAO_ENVIADO("não enviado"),
+        PLANO_ENVIADO("plano enviado"),
+        PLANO_APROVADO("plano aprovado"),
+        DOCUMENTACAO_ENVIADA("documentação enviada"),
+        RELATORIO_ENVIADO("relatório enviado"),
+        RELATORIO_APROVADO_SUPERVISOR("relatório aprovado pelo supervisor"),
+        CONCLUIDO_RESPONSAVEL("concluído pelo responsável");
+
+        private final String descricao;
+
+        StatusAluno(String descricao) {
+            this.descricao = descricao;
+        }
+
+        public String getDescricao() {
+            return descricao;
+        }
+    }
 }
 
 
