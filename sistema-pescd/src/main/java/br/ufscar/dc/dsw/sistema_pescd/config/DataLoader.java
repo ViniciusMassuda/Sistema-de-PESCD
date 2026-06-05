@@ -3,6 +3,7 @@ package br.ufscar.dc.dsw.sistema_pescd.config;
 import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
 import br.ufscar.dc.dsw.sistema_pescd.dao.OfertaDAO;
 import br.ufscar.dc.dsw.sistema_pescd.dao.UsuarioDAO;
+import br.ufscar.dc.dsw.sistema_pescd.domain.StatusAluno;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
@@ -41,7 +42,7 @@ public class DataLoader implements CommandLineRunner {
                 Inscricao inscricao = new Inscricao();
                 inscricao.setAluno(aluno);
                 inscricao.setOferta(oferta);
-                inscricao.setStatusAluno(Inscricao.StatusAluno.NAO_ENVIADO);
+                inscricao.setStatusAluno(StatusAluno.NAO_ENVIADO);
 
                 inscricaoDAO.save(inscricao);
 

@@ -6,6 +6,7 @@ import br.ufscar.dc.dsw.sistema_pescd.dao.PlanoTrabalhoDAO;
 import br.ufscar.dc.dsw.sistema_pescd.dao.UsuarioDAO;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
+import br.ufscar.dc.dsw.sistema_pescd.domain.StatusAluno;
 import br.ufscar.dc.dsw.sistema_pescd.domain.PlanoTrabalho;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
 import br.ufscar.dc.dsw.sistema_pescd.dto.request.PlanoTrabalhoRequestDTO;
@@ -80,7 +81,7 @@ public class AlunoServiceImpl implements IAlunoService {
             throw new RuntimeException("Só é possível enviar plano para ofertas em andamento");
         }
 
-        if (inscricao.getStatusAluno() != Inscricao.StatusAluno.NAO_ENVIADO) {
+        if (inscricao.getStatusAluno() != StatusAluno.NAO_ENVIADO) {
             throw new RuntimeException("Plano já foi enviado para esta oferta");
         }
 
@@ -112,7 +113,7 @@ public class AlunoServiceImpl implements IAlunoService {
         planoTrabalho = planoTrabalhoDAO.save(planoTrabalho);
 
         inscricao.setPlanoTrabalho(planoTrabalho);
-        inscricao.setStatusAluno(Inscricao.StatusAluno.PLANO_ENVIADO);
+        inscricao.setStatusAluno(StatusAluno.PLANO_ENVIADO);
         inscricao.setDataEnvioPlano(LocalDateTime.now());
         inscricaoDAO.save(inscricao);
 
@@ -131,7 +132,7 @@ public class AlunoServiceImpl implements IAlunoService {
             Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
             if (inscricao == null) return false;
 
-            return inscricao.getStatusAluno() == Inscricao.StatusAluno.NAO_ENVIADO;
+            return inscricao.getStatusAluno() == StatusAluno.NAO_ENVIADO;
         } catch (Exception e) {
             return false;
         }
