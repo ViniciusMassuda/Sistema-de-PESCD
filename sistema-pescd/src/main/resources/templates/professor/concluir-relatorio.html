@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Concluir Relatório Final</title>
+</head>
+<body>
+<h2>Concluir Relatório Final (Professor Responsável)</h2>
+<p><strong>Aluno:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
+<hr>
+<h3>Avaliação do Supervisor</h3>
+<p><strong>Parecer do Supervisor:</strong> <span th:text="${inscricao.parecerRelatorioSupervisor}"></span></p>
+<p><strong>Frequência Sugerida:</strong> <span th:text="${inscricao.frequenciaSupervisor}"></span>%</p>
+<p><strong>Nota Sugerida:</strong> <span th:text="${inscricao.notaSupervisor}"></span></p>
+<hr>
+<form th:action="@{/professor/concluir-relatorio}" method="post">
+    <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
+    <label for="parecerResponsavel">Parecer Final:</label><br>
+    <textarea id="parecerResponsavel" name="parecerResponsavel" required></textarea><br><br>
+    <label for="frequenciaResponsavel">Frequência Definitiva (%):</label><br>
+    <input type="number" id="frequenciaResponsavel" name="frequenciaResponsavel" min="0" max="100" required><br><br>
+    <label for="notaResponsavel">Nota Definitiva:</label><br>
+    <select id="notaResponsavel" name="notaResponsavel" required>
+        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+    </select><br><br>
+    <button type="submit">Concluir Avaliação</button>
+</form>
+</body>
+</html>

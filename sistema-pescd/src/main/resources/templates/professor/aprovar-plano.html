@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprovar Plano de Trabalho</title>
+</head>
+<body>
+<h2>Aprovar Plano de Trabalho</h2>
+<p><strong>Aluno:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
+<form th:action="@{/professor/aprovar-plano}" method="post">
+    <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
+    <label for="parecerPlano">Parecer do Plano:</label><br>
+    <textarea id="parecerPlano" name="parecerPlano" required></textarea><br><br>
+    <button type="submit">Aprovar Plano</button>
+    <button type="button" onclick="history.back()">Cancelar</button>
+</form>
+</body>
+</html>

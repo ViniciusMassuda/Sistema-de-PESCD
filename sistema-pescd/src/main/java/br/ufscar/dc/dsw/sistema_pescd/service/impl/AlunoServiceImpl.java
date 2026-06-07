@@ -1,371 +1,113 @@
 package br.ufscar.dc.dsw.sistema_pescd.service.impl;
-
-import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
-import br.ufscar.dc.dsw.sistema_pescd.dao.OfertaDAO;
-import br.ufscar.dc.dsw.sistema_pescd.dao.PlanoTrabalhoDAO;
-import br.ufscar.dc.dsw.sistema_pescd.dao.UsuarioDAO;
-import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
-import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
-import br.ufscar.dc.dsw.sistema_pescd.domain.PlanoTrabalho;
-import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
-import br.ufscar.dc.dsw.sistema_pescd.dto.request.PlanoTrabalhoRequestDTO;
-import br.ufscar.dc.dsw.sistema_pescd.dto.response.OfertaAlunoResponseDTO;
-import br.ufscar.dc.dsw.sistema_pescd.dto.response.PlanoTrabalhoResponseDTO;
-import br.ufscar.dc.dsw.sistema_pescd.dao.DocumentacaoDAO;
-import br.ufscar.dc.dsw.sistema_pescd.domain.DocumentacaoComprobatoria;
-import br.ufscar.dc.dsw.sistema_pescd.dto.request.DocumentacaoRequestDTO;
-import br.ufscar.dc.dsw.sistema_pescd.dto.response.DocumentacaoResponseDTO;
-import br.ufscar.dc.dsw.sistema_pescd.mapper.DocumentacaoMapper;
-
-import br.ufscar.dc.dsw.sistema_pescd.mapper.OfertaMapper;
-import br.ufscar.dc.dsw.sistema_pescd.mapper.PlanoTrabalhoMapper;
+import br.ufscar.dc.dsw.sistema_pescd.dao.*;
+import br.ufscar.dc.dsw.sistema_pescd.domain.*;
+import br.ufscar.dc.dsw.sistema_pescd.dto.request.*;
+import br.ufscar.dc.dsw.sistema_pescd.dto.response.*;
+import br.ufscar.dc.dsw.sistema_pescd.mapper.*;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IAlunoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import br.ufscar.dc.dsw.sistema_pescd.dao.RelatorioDAO;
-import br.ufscar.dc.dsw.sistema_pescd.domain.RelatorioFinal;
-import br.ufscar.dc.dsw.sistema_pescd.dto.request.RelatorioRequestDTO;
-import br.ufscar.dc.dsw.sistema_pescd.dto.response.RelatorioResponseDTO;
-import br.ufscar.dc.dsw.sistema_pescd.mapper.RelatorioMapper;
-
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class AlunoServiceImpl implements IAlunoService {
-
-    @Autowired
-    private InscricaoDAO inscricaoDAO;
-
-    @Autowired
-    private OfertaDAO ofertaDAO;
-
-    @Autowired
-    private UsuarioDAO usuarioDAO;
-
-    @Autowired
-    private PlanoTrabalhoDAO planoTrabalhoDAO;
-
-    @Autowired
-    private DocumentacaoDAO documentacaoDAO;
-
-    @Autowired
-    private DocumentacaoMapper documentacaoMapper;
-
-    @Autowired
-    private OfertaMapper ofertaMapper;
-
-    @Autowired
-    private PlanoTrabalhoMapper planoTrabalhoMapper;
-
-    @Autowired
-    private RelatorioDAO relatorioDAO;
-
-    @Autowired
-    private RelatorioMapper relatorioMapper;
-
-    @Value("${upload.path}")
-    private String uploadPath;
+    @Autowired private InscricaoDAO inscricaoDAO;
+    @Autowired private OfertaDAO ofertaDAO;
+    @Autowired private UsuarioDAO usuarioDAO;
+    @Autowired private PlanoTrabalhoDAO planoTrabalhoDAO;
+    @Autowired private DocumentacaoDAO documentacaoDAO;
+    @Autowired private DocumentacaoMapper documentacaoMapper;
+    @Autowired private OfertaMapper ofertaMapper;
+    @Autowired private PlanoTrabalhoMapper planoTrabalhoMapper;
+    @Autowired private RelatorioDAO relatorioDAO;
+    @Autowired private RelatorioMapper relatorioMapper;
+    @Value("${upload.path}") private String uploadPath;
 
     @Override
     public List<OfertaAlunoResponseDTO> buscarOfertasPorAluno(Usuario aluno) {
-        List<Inscricao> inscricoes = inscricaoDAO.findByAlunoId(aluno.getId());
-
-        return inscricoes.stream()
-                .map(inscricao -> {
-                    Oferta oferta = inscricao.getOferta();
-                    String statusOferta = calcularStatusOferta(oferta);
-                    return ofertaMapper.toDto(oferta, statusOferta, inscricao);
-                })
+        return inscricaoDAO.findByAlunoId(aluno.getId()).stream()
+                .map(i -> ofertaMapper.toDto(i.getOferta(), calcularStatus(i.getOferta()), i))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public PlanoTrabalhoResponseDTO enviarPlanoTrabalho(Long ofertaId, Usuario aluno,
-                                                        PlanoTrabalhoRequestDTO request) {
-        Oferta oferta = ofertaDAO.findById(ofertaId)
-                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
-
-        Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta)
-                .orElseThrow(() -> new RuntimeException("Aluno não está inscrito nesta oferta"));
-
-        String statusOferta = calcularStatusOferta(oferta);
-        if (!"Em andamento".equals(statusOferta)) {
-            throw new RuntimeException("Só é possível enviar plano para ofertas em andamento");
-        }
-
-        if (inscricao.getStatus() != Inscricao.StatusAluno.NAO_ENVIADO) {
-            throw new RuntimeException("Plano já foi enviado para esta oferta");
-        }
-
-        Usuario professorSupervisor = usuarioDAO.findById(request.getProfessorSupervisorId())
-                .orElseThrow(() -> new RuntimeException("Professor supervisor não encontrado"));
-
-        if (professorSupervisor.getRole() != Usuario.Role.PROFESSOR) {
-            throw new RuntimeException("O supervisor deve ser um professor");
-        }
-
-        MultipartFile arquivo = request.getArquivo();
-        if (arquivo.isEmpty()) {
-            throw new RuntimeException("Arquivo PDF é obrigatório");
-        }
-
-        String contentType = arquivo.getContentType();
-        if (contentType == null || !contentType.equals("application/pdf")) {
-            throw new RuntimeException("O arquivo deve ser um PDF");
-        }
-        if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("Arquivo muito grande! O tamanho máximo permitido é 5MB.");
-        }
-
-
-        String nomeArquivo = salvarArquivo(arquivo, aluno.getId(), ofertaId);
-
-        PlanoTrabalho planoTrabalho = planoTrabalhoMapper.toEntity(request, professorSupervisor, nomeArquivo);
-        planoTrabalho = planoTrabalhoDAO.save(planoTrabalho);
-
-        inscricao.setPlanoTrabalho(planoTrabalho);
-        inscricao.setStatus(Inscricao.StatusAluno.PLANO_ENVIADO);
-        inscricao.setDataEnvioPlano(LocalDateTime.now());
-        inscricaoDAO.save(inscricao);
-
-        return planoTrabalhoMapper.toResponseDTO(planoTrabalho, "Plano de trabalho enviado com sucesso!");
+    public PlanoTrabalhoResponseDTO enviarPlanoTrabalho(Long oid, Usuario al, PlanoTrabalhoRequestDTO req) {
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+        if (i.getStatus() != StatusAluno.NAO_ENVIADO) throw new RuntimeException("Ja enviado");
+        Usuario supervisor = usuarioDAO.findById(req.getProfessorSupervisorId()).orElseThrow();
+        String path = salvar(req.getArquivo(), al.getId(), oid, "planos");
+        PlanoTrabalho p = planoTrabalhoMapper.toEntity(req, supervisor, path);
+        p = planoTrabalhoDAO.save(p);
+        i.setPlanoTrabalho(p);
+        i.setStatus(StatusAluno.PLANO_ENVIADO);
+        i.setDataEnvioPlano(LocalDateTime.now());
+        inscricaoDAO.save(i);
+        return planoTrabalhoMapper.toResponseDTO(p, "Sucesso");
     }
 
     @Override
-    public boolean podeEnviarPlano(Long ofertaId, Usuario aluno) {
-        try {
-            Oferta oferta = ofertaDAO.findById(ofertaId).orElse(null);
-            if (oferta == null) return false;
-
-            String statusOferta = calcularStatusOferta(oferta);
-            if (!"Em andamento".equals(statusOferta)) return false;
-
-            Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
-            if (inscricao == null) return false;
-
-            return inscricao.getStatus() == Inscricao.StatusAluno.NAO_ENVIADO;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String salvarArquivo(MultipartFile arquivo, Long alunoId, Long ofertaId) {
-        try {
-            String uploadDir = uploadPath + "/planos/";
-            Path uploadPathObj = Paths.get(uploadDir);
-
-            if (!Files.exists(uploadPathObj)) {
-                Files.createDirectories(uploadPathObj);
-            }
-
-            String nomeOriginal = arquivo.getOriginalFilename();
-            String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
-            String nomeUnico = "aluno_" + alunoId + "_oferta_" + ofertaId + "_" +
-                    UUID.randomUUID().toString() + extensao;
-
-            Path filePath = uploadPathObj.resolve(nomeUnico);
-            Files.write(filePath, arquivo.getBytes());
-
-            return "/uploads/planos/" + nomeUnico;
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
-        }
-    }
-
-    private String calcularStatusOferta(Oferta oferta) {
-        LocalDate hoje = LocalDate.now();
-        LocalDate dataInicio = oferta.getDataInicio();
-        LocalDate dataFim = oferta.getDataFim();
-
-        if (hoje.isBefore(dataInicio)) {
-            return "Não iniciada";
-        } else if (hoje.isAfter(dataFim)) {
-            return "Atrasada";
-        } else {
-            return "Em andamento";
-        }
+    public boolean podeEnviarPlano(Long oid, Usuario al) {
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElse(null)).orElse(null);
+        return i != null && i.getStatus() == StatusAluno.NAO_ENVIADO;
     }
 
     @Override
-    public DocumentacaoResponseDTO enviarDocumentacao(Long ofertaId, Usuario aluno,
-                                                      DocumentacaoRequestDTO request) {
-        Oferta oferta = ofertaDAO.findById(ofertaId)
-                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
-
-        Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta)
-                .orElseThrow(() -> new RuntimeException("Aluno não está inscrito nesta oferta"));
-
-        String statusOferta = calcularStatusOferta(oferta);
-        if (!"Em andamento".equals(statusOferta)) {
-            throw new RuntimeException("Só é possível enviar documentação para ofertas em andamento");
-        }
-
-        if (inscricao.getStatus() != Inscricao.StatusAluno.NAO_ENVIADO) {
-            throw new RuntimeException("Documentação já foi enviada para esta oferta");
-        }
-
-        MultipartFile arquivo = request.getArquivo();
-        if (arquivo.isEmpty()) {
-            throw new RuntimeException("Arquivo PDF é obrigatório");
-        }
-
-        String contentType = arquivo.getContentType();
-        if (contentType == null || !contentType.equals("application/pdf")) {
-            throw new RuntimeException("O arquivo deve ser um PDF");
-        }
-        if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("Arquivo muito grande! O tamanho máximo permitido é 5MB.");
-        }
-
-        String nomeArquivo = salvarArquivoDocumentacao(arquivo, aluno.getId(), ofertaId);
-
-        DocumentacaoComprobatoria documentacao = documentacaoMapper.toEntity(request, nomeArquivo);
-        documentacao = documentacaoDAO.save(documentacao);
-
-        inscricao.setDocumentacaoComprobatoria(documentacao);
-        inscricao.setStatus(Inscricao.StatusAluno.DOCUMENTACAO_ENVIADA);
-        inscricaoDAO.save(inscricao);
-
-        return documentacaoMapper.toResponseDTO(documentacao, "Documentação enviada com sucesso!");
+    public DocumentacaoResponseDTO enviarDocumentacao(Long oid, Usuario al, DocumentacaoRequestDTO req) {
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+        String path = salvar(req.getArquivo(), al.getId(), oid, "documentacoes");
+        DocumentacaoComprobatoria d = documentacaoMapper.toEntity(req, path);
+        d = documentacaoDAO.save(d);
+        i.setDocumentacaoComprobatoria(d);
+        i.setStatus(StatusAluno.DOCUMENTACAO_ENVIADA);
+        inscricaoDAO.save(i);
+        return documentacaoMapper.toResponseDTO(d, "Sucesso");
     }
 
     @Override
-    public boolean podeEnviarDocumentacao(Long ofertaId, Usuario aluno) {
-        try {
-            Oferta oferta = ofertaDAO.findById(ofertaId).orElse(null);
-            if (oferta == null) return false;
-
-            String statusOferta = calcularStatusOferta(oferta);
-            if (!"Em andamento".equals(statusOferta)) return false;
-
-            Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
-            if (inscricao == null) return false;
-
-            return inscricao.getStatus() == Inscricao.StatusAluno.NAO_ENVIADO;
-
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String salvarArquivoDocumentacao(MultipartFile arquivo, Long alunoId, Long ofertaId) {
-        try {
-            String uploadDir = uploadPath + "/documentacoes/";
-            Path uploadPathObj = Paths.get(uploadDir);
-
-            if (!Files.exists(uploadPathObj)) {
-                Files.createDirectories(uploadPathObj);
-            }
-
-            String nomeOriginal = arquivo.getOriginalFilename();
-            String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
-            String nomeUnico = "doc_aluno_" + alunoId + "_oferta_" + ofertaId + "_" +
-                    UUID.randomUUID().toString() + extensao;
-
-            Path filePath = uploadPathObj.resolve(nomeUnico);
-            Files.write(filePath, arquivo.getBytes());
-
-            return "/uploads/documentacoes/" + nomeUnico;
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
-        }
+    public boolean podeEnviarDocumentacao(Long oid, Usuario al) {
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElse(null)).orElse(null);
+        return i != null && i.getStatus() == StatusAluno.NAO_ENVIADO;
     }
 
     @Override
-    public RelatorioResponseDTO enviarRelatorio(Long ofertaId, Usuario aluno,
-                                                RelatorioRequestDTO request) {
-        Oferta oferta = ofertaDAO.findById(ofertaId)
-                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
-
-        Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta)
-                .orElseThrow(() -> new RuntimeException("Aluno não está inscrito nesta oferta"));
-
-        String statusOferta = calcularStatusOferta(oferta);
-        if (!"Em andamento".equals(statusOferta)) {
-            throw new RuntimeException("Só é possível enviar relatório para ofertas em andamento");
-        }
-
-        if (inscricao.getStatus() != Inscricao.StatusAluno.PLANO_APROVADO) {
-            throw new RuntimeException("Só é possível enviar relatório após o plano ser aprovado");
-        }
-
-        MultipartFile arquivo = request.getArquivo();
-        if (arquivo.isEmpty()) {
-            throw new RuntimeException("Arquivo PDF é obrigatório");
-        }
-
-        String contentType = arquivo.getContentType();
-        if (contentType == null || !contentType.equals("application/pdf")) {
-            throw new RuntimeException("O arquivo deve ser um PDF");
-        }
-
-        if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " +
-                    (arquivo.getSize() / 1024 / 1024) + "MB");
-        }
-
-        String nomeArquivo = salvarArquivoRelatorio(arquivo, aluno.getId(), ofertaId);
-
-        RelatorioFinal relatorio = relatorioMapper.toEntity(request, nomeArquivo);
-        relatorio = relatorioDAO.save(relatorio);
-
-        inscricao.setRelatorioFinal(relatorio);
-        inscricao.setStatus(Inscricao.StatusAluno.RELATORIO_ENVIADO);
-        inscricaoDAO.save(inscricao);
-
-        return relatorioMapper.toResponseDTO(relatorio, "Relatório enviado com sucesso!");
+    public RelatorioResponseDTO enviarRelatorio(Long oid, Usuario al, RelatorioRequestDTO req) {
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+        String path = salvar(req.getArquivo(), al.getId(), oid, "relatorios");
+        RelatorioFinal r = relatorioMapper.toEntity(req, path);
+        r = relatorioDAO.save(r);
+        i.setRelatorioFinal(r);
+        i.setStatus(StatusAluno.RELATORIO_ENVIADO);
+        inscricaoDAO.save(i);
+        return relatorioMapper.toResponseDTO(r, "Sucesso");
     }
+
     @Override
-    public boolean podeEnviarRelatorio(Long ofertaId, Usuario aluno) {
-        try {
-            Oferta oferta = ofertaDAO.findById(ofertaId).orElse(null);
-            if (oferta == null) return false;
-
-            String statusOferta = calcularStatusOferta(oferta);
-            if (!"Em andamento".equals(statusOferta)) return false;
-
-            Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
-            if (inscricao == null) return false;
-
-            return inscricao.getStatus() == Inscricao.StatusAluno.PLANO_APROVADO;
-        } catch (Exception e) {
-            return false;
-        }
+    public boolean podeEnviarRelatorio(Long oid, Usuario al) {
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElse(null)).orElse(null);
+        return i != null && i.getStatus() == StatusAluno.PLANO_APROVADO;
     }
-    private String salvarArquivoRelatorio(MultipartFile arquivo, Long alunoId, Long ofertaId) {
+
+    private String salvar(MultipartFile f, Long aid, Long oid, String sub) {
         try {
-            String uploadDir = uploadPath + "/relatorios/";
-            Path uploadPathObj = Paths.get(uploadDir);
+            Path p = Paths.get(uploadPath + "/" + sub + "/");
+            if (!Files.exists(p)) Files.createDirectories(p);
+            String name = sub + "_" + aid + "_" + oid + "_" + UUID.randomUUID() + ".pdf";
+            Files.write(p.resolve(name), f.getBytes());
+            return "/uploads/" + sub + "/" + name;
+        } catch (IOException e) { throw new RuntimeException(e); }
+    }
 
-            if (!Files.exists(uploadPathObj)) {
-                Files.createDirectories(uploadPathObj);
-            }
-
-            String nomeOriginal = arquivo.getOriginalFilename();
-            String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
-            String nomeUnico = "rel_aluno_" + alunoId + "_oferta_" + ofertaId + "_" +
-                    UUID.randomUUID().toString() + extensao;
-
-            Path filePath = uploadPathObj.resolve(nomeUnico);
-            Files.write(filePath, arquivo.getBytes());
-
-            return "/uploads/relatorios/" + nomeUnico;
-
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
-        }
+    private String calcularStatus(Oferta o) {
+        LocalDate h = LocalDate.now();
+        if (h.isBefore(o.getDataInicio())) return "Nao iniciada";
+        if (h.isAfter(o.getDataFim())) return "Atrasada";
+        return "Em andamento";
     }
 }
