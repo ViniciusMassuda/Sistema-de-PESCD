@@ -11,6 +11,12 @@ import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
 import br.ufscar.dc.dsw.sistema_pescd.dto.request.PlanoTrabalhoRequestDTO;
 import br.ufscar.dc.dsw.sistema_pescd.dto.response.OfertaAlunoResponseDTO;
 import br.ufscar.dc.dsw.sistema_pescd.dto.response.PlanoTrabalhoResponseDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dao.DocumentacaoDAO;
+import br.ufscar.dc.dsw.sistema_pescd.domain.DocumentacaoComprobatoria;
+import br.ufscar.dc.dsw.sistema_pescd.dto.request.DocumentacaoRequestDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dto.response.DocumentacaoResponseDTO;
+import br.ufscar.dc.dsw.sistema_pescd.mapper.DocumentacaoMapper;
+
 import br.ufscar.dc.dsw.sistema_pescd.mapper.OfertaMapper;
 import br.ufscar.dc.dsw.sistema_pescd.mapper.PlanoTrabalhoMapper;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IAlunoService;
@@ -18,6 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import br.ufscar.dc.dsw.sistema_pescd.dao.RelatorioDAO;
+import br.ufscar.dc.dsw.sistema_pescd.domain.RelatorioFinal;
+import br.ufscar.dc.dsw.sistema_pescd.dto.request.RelatorioRequestDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dto.response.RelatorioResponseDTO;
+import br.ufscar.dc.dsw.sistema_pescd.mapper.RelatorioMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,10 +57,22 @@ public class AlunoServiceImpl implements IAlunoService {
     private PlanoTrabalhoDAO planoTrabalhoDAO;
 
     @Autowired
+    private DocumentacaoDAO documentacaoDAO;
+
+    @Autowired
+    private DocumentacaoMapper documentacaoMapper;
+
+    @Autowired
     private OfertaMapper ofertaMapper;
 
     @Autowired
     private PlanoTrabalhoMapper planoTrabalhoMapper;
+
+    @Autowired
+    private RelatorioDAO relatorioDAO;
+
+    @Autowired
+    private RelatorioMapper relatorioMapper;
 
     @Value("${upload.path}")
     private String uploadPath;
@@ -100,11 +124,10 @@ public class AlunoServiceImpl implements IAlunoService {
         if (contentType == null || !contentType.equals("application/pdf")) {
             throw new RuntimeException("O arquivo deve ser um PDF");
         }
-
         if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " +
-                    (arquivo.getSize() / 1024 / 1024) + "MB");
+            throw new RuntimeException("Arquivo muito grande! O tamanho máximo permitido é 5MB.");
         }
+
 
         String nomeArquivo = salvarArquivo(arquivo, aluno.getId(), ofertaId);
 
@@ -172,6 +195,177 @@ public class AlunoServiceImpl implements IAlunoService {
             return "Atrasada";
         } else {
             return "Em andamento";
+        }
+    }
+
+    @Override
+    public DocumentacaoResponseDTO enviarDocumentacao(Long ofertaId, Usuario aluno,
+                                                      DocumentacaoRequestDTO request) {
+        Oferta oferta = ofertaDAO.findById(ofertaId)
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
+
+        Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta)
+                .orElseThrow(() -> new RuntimeException("Aluno não está inscrito nesta oferta"));
+
+        String statusOferta = calcularStatusOferta(oferta);
+        if (!"Em andamento".equals(statusOferta)) {
+            throw new RuntimeException("Só é possível enviar documentação para ofertas em andamento");
+        }
+
+        if (inscricao.getStatus() != Inscricao.StatusAluno.NAO_ENVIADO) {
+            throw new RuntimeException("Documentação já foi enviada para esta oferta");
+        }
+
+        MultipartFile arquivo = request.getArquivo();
+        if (arquivo.isEmpty()) {
+            throw new RuntimeException("Arquivo PDF é obrigatório");
+        }
+
+        String contentType = arquivo.getContentType();
+        if (contentType == null || !contentType.equals("application/pdf")) {
+            throw new RuntimeException("O arquivo deve ser um PDF");
+        }
+        if (arquivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("Arquivo muito grande! O tamanho máximo permitido é 5MB.");
+        }
+
+        String nomeArquivo = salvarArquivoDocumentacao(arquivo, aluno.getId(), ofertaId);
+
+        DocumentacaoComprobatoria documentacao = documentacaoMapper.toEntity(request, nomeArquivo);
+        documentacao = documentacaoDAO.save(documentacao);
+
+        inscricao.setDocumentacaoComprobatoria(documentacao);
+        inscricao.setStatus(Inscricao.StatusAluno.DOCUMENTACAO_ENVIADA);
+        inscricaoDAO.save(inscricao);
+
+        return documentacaoMapper.toResponseDTO(documentacao, "Documentação enviada com sucesso!");
+    }
+
+    @Override
+    public boolean podeEnviarDocumentacao(Long ofertaId, Usuario aluno) {
+        try {
+            Oferta oferta = ofertaDAO.findById(ofertaId).orElse(null);
+            if (oferta == null) return false;
+
+            String statusOferta = calcularStatusOferta(oferta);
+            if (!"Em andamento".equals(statusOferta)) return false;
+
+            Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
+            if (inscricao == null) return false;
+
+            return inscricao.getStatus() == Inscricao.StatusAluno.NAO_ENVIADO;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String salvarArquivoDocumentacao(MultipartFile arquivo, Long alunoId, Long ofertaId) {
+        try {
+            String uploadDir = uploadPath + "/documentacoes/";
+            Path uploadPathObj = Paths.get(uploadDir);
+
+            if (!Files.exists(uploadPathObj)) {
+                Files.createDirectories(uploadPathObj);
+            }
+
+            String nomeOriginal = arquivo.getOriginalFilename();
+            String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
+            String nomeUnico = "doc_aluno_" + alunoId + "_oferta_" + ofertaId + "_" +
+                    UUID.randomUUID().toString() + extensao;
+
+            Path filePath = uploadPathObj.resolve(nomeUnico);
+            Files.write(filePath, arquivo.getBytes());
+
+            return "/uploads/documentacoes/" + nomeUnico;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public RelatorioResponseDTO enviarRelatorio(Long ofertaId, Usuario aluno,
+                                                RelatorioRequestDTO request) {
+        Oferta oferta = ofertaDAO.findById(ofertaId)
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
+
+        Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta)
+                .orElseThrow(() -> new RuntimeException("Aluno não está inscrito nesta oferta"));
+
+        String statusOferta = calcularStatusOferta(oferta);
+        if (!"Em andamento".equals(statusOferta)) {
+            throw new RuntimeException("Só é possível enviar relatório para ofertas em andamento");
+        }
+
+        if (inscricao.getStatus() != Inscricao.StatusAluno.PLANO_APROVADO) {
+            throw new RuntimeException("Só é possível enviar relatório após o plano ser aprovado");
+        }
+
+        MultipartFile arquivo = request.getArquivo();
+        if (arquivo.isEmpty()) {
+            throw new RuntimeException("Arquivo PDF é obrigatório");
+        }
+
+        String contentType = arquivo.getContentType();
+        if (contentType == null || !contentType.equals("application/pdf")) {
+            throw new RuntimeException("O arquivo deve ser um PDF");
+        }
+
+        if (arquivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " +
+                    (arquivo.getSize() / 1024 / 1024) + "MB");
+        }
+
+        String nomeArquivo = salvarArquivoRelatorio(arquivo, aluno.getId(), ofertaId);
+
+        RelatorioFinal relatorio = relatorioMapper.toEntity(request, nomeArquivo);
+        relatorio = relatorioDAO.save(relatorio);
+
+        inscricao.setRelatorioFinal(relatorio);
+        inscricao.setStatus(Inscricao.StatusAluno.RELATORIO_ENVIADO);
+        inscricaoDAO.save(inscricao);
+
+        return relatorioMapper.toResponseDTO(relatorio, "Relatório enviado com sucesso!");
+    }
+    @Override
+    public boolean podeEnviarRelatorio(Long ofertaId, Usuario aluno) {
+        try {
+            Oferta oferta = ofertaDAO.findById(ofertaId).orElse(null);
+            if (oferta == null) return false;
+
+            String statusOferta = calcularStatusOferta(oferta);
+            if (!"Em andamento".equals(statusOferta)) return false;
+
+            Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta).orElse(null);
+            if (inscricao == null) return false;
+
+            return inscricao.getStatus() == Inscricao.StatusAluno.PLANO_APROVADO;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    private String salvarArquivoRelatorio(MultipartFile arquivo, Long alunoId, Long ofertaId) {
+        try {
+            String uploadDir = uploadPath + "/relatorios/";
+            Path uploadPathObj = Paths.get(uploadDir);
+
+            if (!Files.exists(uploadPathObj)) {
+                Files.createDirectories(uploadPathObj);
+            }
+
+            String nomeOriginal = arquivo.getOriginalFilename();
+            String extensao = nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
+            String nomeUnico = "rel_aluno_" + alunoId + "_oferta_" + ofertaId + "_" +
+                    UUID.randomUUID().toString() + extensao;
+
+            Path filePath = uploadPathObj.resolve(nomeUnico);
+            Files.write(filePath, arquivo.getBytes());
+
+            return "/uploads/relatorios/" + nomeUnico;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar arquivo: " + e.getMessage());
         }
     }
 }

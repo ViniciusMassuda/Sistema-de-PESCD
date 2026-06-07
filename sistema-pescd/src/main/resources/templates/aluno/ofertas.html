@@ -23,7 +23,7 @@
                         <th th:text="#{label.startDate}">Data Início</th>
                         <th th:text="#{label.endDate}">Data Fim</th>
                         <th th:text="#{label.responsible}">Professor Responsável</th>
-                        <th th:text="#{aluno.status_oferta}">Status</th>
+                        <th th:text="#{aluno.status_oferta}">Status da Oferta</th>
                         <th th:text="#{label.actions}">Ações</th>
                     </tr>
                     </thead>
@@ -41,23 +41,48 @@
                             </span>
                         </td>
                         <td>
-                            <!-- Botão dinâmico baseado no status da oferta E status do aluno -->
+                            <!-- ==================== AL.02 - Botão Plano ==================== -->
                             <div th:if="${oferta.statusOferta == 'Em andamento'}">
-                                <!-- Status "não enviado" - mostra botão habilitado -->
                                 <a th:if="${oferta.statusAluno == 'não enviado'}"
                                    th:href="@{/aluno/oferta/{id}/plano(id=${oferta.id})}"
-                                   class="btn btn-sm btn-primary">
-                                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{aluno.enviar_plano.botao_nao_enviado}">Plano</span>
+                                   class="btn btn-sm btn-primary me-1">
+                                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{aluno.enviar_plano.botao}">Enviar Plano</span>
                                 </a>
-                                <!-- Status "plano enviado" - mostra botão desabilitado -->
                                 <span th:if="${oferta.statusAluno == 'plano enviado'}"
-                                      class="btn btn-sm btn-secondary disabled">
-                                    <i class="bi bi-check-circle"></i> <span th:text="#{aluno.enviar_plano.botao_enviado}">Plano enviado</span>
+                                      class="btn btn-sm btn-secondary disabled me-1">
+                                          <i class="bi bi-clock-history"></i> <span th:text="#{aluno.enviar_plano.botao_enviado}">Plano enviado</span>
+                                 </span>
+                            </div>
+
+                            <!-- ==================== AL.03 - Botão Documentação ==================== -->
+                            <div th:if="${oferta.statusOferta == 'Em andamento'}">
+                                <a th:if="${oferta.statusAluno == 'não enviado'}"
+                                   th:href="@{/aluno/oferta/{id}/documentacao(id=${oferta.id})}"
+                                   class="btn btn-sm btn-info me-1">
+                                    <i class="bi bi-file-earmark-pdf"></i> <span th:text="#{aluno.enviar_documentacao.botao}">Enviar Documentação</span>
+                                </a>
+                                <span th:if="${oferta.statusAluno == 'documentação enviada'}"
+                                      class="btn btn-sm btn-secondary disabled me-1">
+                                        <i class="bi bi-check-circle"></i> <span th:text="#{aluno.enviar_documentacao.botao_enviado}">Documentação enviada</span>
+                               </span>
+                            </div>
+
+                            <!-- ==================== AL.04 - Botão Relatório ==================== -->
+                            <div th:if="${oferta.statusOferta == 'Em andamento'}">
+                                <a th:if="${oferta.statusAluno == 'plano aprovado'}"
+                                   th:href="@{/aluno/oferta/{id}/relatorio(id=${oferta.id})}"
+                                   class="btn btn-sm btn-warning me-1">
+                                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{aluno.enviar_relatorio.botao}">Enviar Relatório</span>
+                                </a>
+                                <span th:if="${oferta.statusAluno == 'relatório enviado'}"
+                                      class="btn btn-sm btn-secondary disabled me-1">
+                                    <i class="bi bi-check-circle"></i> <span th:text="#{aluno.enviar_relatorio.botao_enviado}">Relatório enviado</span>
                                 </span>
                             </div>
-                            <!-- Oferta não está em andamento -->
+
+                            <!-- Mensagem quando oferta não está em andamento -->
                             <span th:if="${oferta.statusOferta != 'Em andamento'}" class="text-muted">
-                                <i class="bi bi-lock"></i> <span th:text="#{aluno.enviar_plano.indisponivel}">Indisponível</span>
+                                    <i class="bi bi-lock"></i> Indisponível
                             </span>
                         </td>
                     </tr>

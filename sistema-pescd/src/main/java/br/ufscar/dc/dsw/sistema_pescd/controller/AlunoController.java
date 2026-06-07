@@ -16,10 +16,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import br.ufscar.dc.dsw.sistema_pescd.dto.request.DocumentacaoRequestDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dto.response.DocumentacaoResponseDTO;
+
+import br.ufscar.dc.dsw.sistema_pescd.dto.request.RelatorioRequestDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dto.response.RelatorioResponseDTO;
+import br.ufscar.dc.dsw.sistema_pescd.domain.PlanoTrabalho;
 import java.util.List;
+
+import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
+import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
+import br.ufscar.dc.dsw.sistema_pescd.domain.PlanoTrabalho;
 
 @Controller
 @RequestMapping("/aluno")
@@ -33,6 +42,9 @@ public class AlunoController {
 
     @Autowired
     private OfertaDAO ofertaDAO;
+
+    @Autowired
+    private InscricaoDAO inscricaoDAO;
 
     @GetMapping("/ofertas")
     public String listarOfertas(@AuthenticationPrincipal UserDetails userDetails,
@@ -121,9 +133,112 @@ public class AlunoController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Erro ao enviar plano: " + e.getMessage());
-            return "redirect:/aluno/oferta/" + id + "/plano";
+            return "redirect:/aluno/ofertas";
         }
 
         return "redirect:/aluno/ofertas";
     }
+
+    // AL.03 - Exibir formulário de envio de documentação
+    @GetMapping("/oferta/{id}/documentacao")
+    public String mostrarFormularioDocumentacao(@PathVariable Long id,
+                                                @AuthenticationPrincipal UserDetails userDetails,
+                                                Model model,
+                                                RedirectAttributes redirectAttributes) {
+        Usuario aluno = usuarioDAO.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (!alunoService.podeEnviarDocumentacao(id, aluno)) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Não é possível enviar documentação para esta oferta.");
+            return "redirect:/aluno/ofertas";
+        }
+
+        Oferta oferta = ofertaDAO.findById(id)
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
+
+        model.addAttribute("ofertaId", id);
+        model.addAttribute("ofertaNome", oferta.getNome());
+        model.addAttribute("documentacaoRequest", new DocumentacaoRequestDTO());
+
+        return "aluno/enviar-documentacao";
+    }
+
+    // AL.03 - Processar envio de documentação
+    @PostMapping("/oferta/{id}/documentacao")
+    public String enviarDocumentacao(@PathVariable Long id,
+                                     @Valid @ModelAttribute("documentacaoRequest") DocumentacaoRequestDTO request,
+                                     @AuthenticationPrincipal UserDetails userDetails,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            Usuario aluno = usuarioDAO.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+            DocumentacaoResponseDTO response = alunoService.enviarDocumentacao(id, aluno, request);
+
+            redirectAttributes.addFlashAttribute("success", response.getMensagem());
+
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/aluno/ofertas";
+        }
+
+        return "redirect:/aluno/ofertas";
+    }
+
+    // AL.04 - Exibir formulário de envio de relatório
+    @GetMapping("/oferta/{id}/relatorio")
+    public String mostrarFormularioRelatorio(@PathVariable Long id,
+                                             @AuthenticationPrincipal UserDetails userDetails,
+                                             Model model,
+                                             RedirectAttributes redirectAttributes) {
+        Usuario aluno = usuarioDAO.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (!alunoService.podeEnviarRelatorio(id, aluno)) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Não é possível enviar relatório para esta oferta.");
+            return "redirect:/aluno/ofertas";
+        }
+
+        Oferta oferta = ofertaDAO.findById(id)
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
+
+        // Buscar inscrição para pegar o PlanoTrabalho
+        Inscricao inscricao = inscricaoDAO.findByAlunoAndOferta(aluno, oferta)
+                .orElseThrow(() -> new RuntimeException("Inscrição não encontrada"));
+
+        PlanoTrabalho planoTrabalho = inscricao.getPlanoTrabalho();
+
+        model.addAttribute("ofertaId", id);
+        model.addAttribute("ofertaNome", oferta.getNome());
+        model.addAttribute("planoTrabalho", planoTrabalho);
+        model.addAttribute("relatorioRequest", new RelatorioRequestDTO());
+
+        return "aluno/enviar-relatorio";
+    }
+
+    // AL.04 - Processar envio de relatório
+    @PostMapping("/oferta/{id}/relatorio")
+    public String enviarRelatorio(@PathVariable Long id,
+                                  @Valid @ModelAttribute("relatorioRequest") RelatorioRequestDTO request,
+                                  @AuthenticationPrincipal UserDetails userDetails,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            Usuario aluno = usuarioDAO.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+            RelatorioResponseDTO response = alunoService.enviarRelatorio(id, aluno, request);
+
+            redirectAttributes.addFlashAttribute("success", response.getMensagem());
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erro ao enviar relatório: " + e.getMessage());
+            return "redirect:/aluno/oferta/" + id + "/relatorio";
+        }
+
+        return "redirect:/aluno/ofertas";
+    }
+
+
 }

@@ -40,6 +40,12 @@ public class OfertaMapper {
                 case PLANO_APROVADO:
                     dto.setStatusAluno("plano aprovado");
                     break;
+                case DOCUMENTACAO_ENVIADA:
+                    dto.setStatusAluno("documentação enviada");
+                    break;
+                case RELATORIO_ENVIADO:
+                    dto.setStatusAluno("relatório enviado");
+                    break;
                 default:
                     dto.setStatusAluno(inscricao.getStatus().name().toLowerCase().replace("_", " "));
                     break;
