@@ -44,6 +44,12 @@ public class AlunoServiceImpl implements IAlunoService {
         Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
         if (i.getStatus() != StatusAluno.NAO_ENVIADO) throw new RuntimeException("Ja enviado");
         Usuario supervisor = usuarioDAO.findById(req.getProfessorSupervisorId()).orElseThrow();
+
+        MultipartFile arquivo = req.getArquivo();
+        if (arquivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " + (arquivo.getSize() / 1024 / 1024) + "MB");
+        }
+
         String path = salvar(req.getArquivo(), al.getId(), oid, "planos");
         PlanoTrabalho p = planoTrabalhoMapper.toEntity(req, supervisor, path);
         p = planoTrabalhoDAO.save(p);
@@ -51,6 +57,7 @@ public class AlunoServiceImpl implements IAlunoService {
         i.setStatus(StatusAluno.PLANO_ENVIADO);
         i.setDataEnvioPlano(LocalDateTime.now());
         inscricaoDAO.save(i);
+
         return planoTrabalhoMapper.toResponseDTO(p, "Sucesso");
     }
 
@@ -63,6 +70,12 @@ public class AlunoServiceImpl implements IAlunoService {
     @Override
     public DocumentacaoResponseDTO enviarDocumentacao(Long oid, Usuario al, DocumentacaoRequestDTO req) {
         Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+
+        MultipartFile arquivo = req.getArquivo();
+        if (arquivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " + (arquivo.getSize() / 1024 / 1024) + "MB");
+        }
+
         String path = salvar(req.getArquivo(), al.getId(), oid, "documentacoes");
         DocumentacaoComprobatoria d = documentacaoMapper.toEntity(req, path);
         d = documentacaoDAO.save(d);
@@ -81,6 +94,12 @@ public class AlunoServiceImpl implements IAlunoService {
     @Override
     public RelatorioResponseDTO enviarRelatorio(Long oid, Usuario al, RelatorioRequestDTO req) {
         Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+
+        MultipartFile arquivo = req.getArquivo();
+        if (arquivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " + (arquivo.getSize() / 1024 / 1024) + "MB");
+        }
+
         String path = salvar(req.getArquivo(), al.getId(), oid, "relatorios");
         RelatorioFinal r = relatorioMapper.toEntity(req, path);
         r = relatorioDAO.save(r);

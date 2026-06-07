@@ -234,7 +234,7 @@ public class AlunoController {
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Erro ao enviar relatório: " + e.getMessage());
-            return "redirect:/aluno/oferta/" + id + "/relatorio";
+            return "redirect:/aluno/ofertas";
         }
 
         return "redirect:/aluno/ofertas";
