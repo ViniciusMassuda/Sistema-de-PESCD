@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Alunos</title>
+</head>
+<body>
+<h2>Alunos Sob sua Supervisão/Responsabilidade</h2>
+
+<div th:if="${param.sucesso}" style="color: green;">
+    <p th:if="${param.sucesso[0] == 'plano_aprovado'}">Plano aprovado com sucesso!</p>
+    <p th:if="${param.sucesso[0] == 'relatorio_aprovado'}">Relatório aprovado com sucesso!</p>
+    <p th:if="${param.sucesso[0] == 'relatorio_concluido'}">Relatório concluído com sucesso!</p>
+    <p th:if="${param.sucesso[0] == 'documentacao_avaliada'}">Documentação avaliada com sucesso!</p>
+</div>
+
+<div th:if="${param.erro}" style="color: red;">
+    <p th:if="${param.erro[0] == 'status_invalido'}">Ação inválida para o status atual do aluno.</p>
+</div>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Aluno</th>
+        <th>Status</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="i : ${inscricoes}">
+        <td th:text="${i.aluno.nome}"></td>
+        <td th:text="${i.statusAluno.descricao}"></td>
+        <td>
+            <a th:if="${i.statusAluno.name() == 'PLANO_ENVIADO'}" th:href="@{/professor/aprovar-plano/{id}(id=${i.id})}">Aprovar Plano</a>
+            <a th:if="${i.statusAluno.name() == 'RELATORIO_ENVIADO'}" th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}">Aprovar Relatório (Supervisor)</a>
+            <a th:if="${i.statusAluno.name() == 'RELATORIO_APROVADO_SUPERVISOR'}" th:href="@{/professor/concluir-relatorio/{id}(id=${i.id})}">Concluir Relatório (Responsável)</a>
+            <a th:if="${i.statusAluno.name() == 'DOCUMENTACAO_ENVIADA'}" th:href="@{/professor/avaliar-documentacao/{id}(id=${i.id})}">Avaliar Documentação</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<a th:href="@{/professor/home}">Voltar para Home</a>
+</body>
+</html>

@@ -15,14 +15,34 @@ public class ProfessorController {
     @Autowired
     private InscricaoDAO inscricaoDAO;
 
+    @GetMapping("/lista-alunos")
+    public String listaAlunos(Model model) {
+        model.addAttribute("inscricoes", inscricaoDAO.findAll());
+        return "professor/lista-alunos";
+    }
 
     @GetMapping("/aprovar-plano/{inscricaoId}")
+    public String exibirTelaAprovarPlano(@PathVariable Long inscricaoId, Model model) {
+        Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
+                .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
+
+        if (inscricao.getStatusAluno() != StatusAluno.PLANO_ENVIADO) {
+            return "redirect:/professor/lista-alunos?erro=status_invalido";
+        }
+
+        model.addAttribute("inscricao", inscricao);
+        return "professor/aprovar-plano";
+    }
+
     @PostMapping("/aprovar-plano")
     public String processarAprovarPlano(@RequestParam("inscricaoId") Long inscricaoId,
                                         @RequestParam("parecerPlano") String parecerPlano) {
-
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
+
+        if (inscricao.getStatusAluno() != StatusAluno.PLANO_ENVIADO) {
+            return "redirect:/professor/lista-alunos?erro=status_invalido";
+        }
 
         inscricao.setParecerPlano(parecerPlano);
         inscricao.setStatusAluno(StatusAluno.PLANO_APROVADO);
@@ -33,7 +53,6 @@ public class ProfessorController {
 
     @GetMapping("/aprovar-relatorio/{inscricaoId}")
     public String exibirTelaAprovarRelatorio(@PathVariable Long inscricaoId, Model model) {
-
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
 
@@ -45,43 +64,29 @@ public class ProfessorController {
         return "professor/aprovar-relatorio";
     }
 
-    // Recebe os dados, salva parecer, frequência, nota e muda o status
     @PostMapping("/aprovar-relatorio")
     public String processarAprovarRelatorio(@RequestParam("inscricaoId") Long inscricaoId,
                                             @RequestParam("parecerRelatorio") String parecerRelatorio,
                                             @RequestParam("frequencia") Integer frequencia,
                                             @RequestParam("nota") String nota) {
-
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
 
         inscricao.setParecerRelatorioSupervisor(parecerRelatorio);
         inscricao.setFrequenciaSupervisor(frequencia);
         inscricao.setNotaSupervisor(nota);
-        inscricao.setStatusAluno(StatusAluno.RELATORIO_APROVADO_SUPERVISOR); // Muda o status
+        inscricao.setStatusAluno(StatusAluno.RELATORIO_APROVADO_SUPERVISOR);
 
         inscricaoDAO.save(inscricao);
 
         return "redirect:/professor/lista-alunos?sucesso=relatorio_aprovado";
     }
-    public String exibirTelaAprovarPlano(@PathVariable Long inscricaoId, Model model) {
 
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
-                .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
-
-        if (inscricao.getStatusAluno() != StatusAluno.PLANO_ENVIADO) {
-            return "redirect:/professor/lista-alunos?erro=status_invalido";
-        }
-
-        model.addAttribute("inscricao", inscricao);
-        return "professor/aprovar-plano";
-    }
     @GetMapping("/concluir-relatorio/{inscricaoId}")
     public String exibirTelaConcluirRelatorio(@PathVariable Long inscricaoId, Model model) {
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
 
-        // Regra: O Responsável só avalia DEPOIS que o Supervisor aprovou
         if (inscricao.getStatusAluno() != StatusAluno.RELATORIO_APROVADO_SUPERVISOR) {
             return "redirect:/professor/lista-alunos?erro=status_invalido";
         }
@@ -95,24 +100,24 @@ public class ProfessorController {
                                              @RequestParam("parecerResponsavel") String parecerResponsavel,
                                              @RequestParam("frequenciaResponsavel") Integer frequenciaResponsavel,
                                              @RequestParam("notaResponsavel") String notaResponsavel) {
-
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
 
         inscricao.setParecerRelatorioResponsavel(parecerResponsavel);
         inscricao.setFrequenciaResponsavel(frequenciaResponsavel);
         inscricao.setNotaResponsavel(notaResponsavel);
-
         inscricao.setStatusAluno(StatusAluno.CONCLUIDO_RESPONSAVEL);
 
         inscricaoDAO.save(inscricao);
 
         return "redirect:/professor/lista-alunos?sucesso=relatorio_concluido";
     }
+
     @GetMapping("/avaliar-documentacao/{inscricaoId}")
     public String exibirTelaAvaliarDocumentacao(@PathVariable Long inscricaoId, Model model) {
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
+        
         if (inscricao.getStatusAluno() != StatusAluno.DOCUMENTACAO_ENVIADA) {
             return "redirect:/professor/lista-alunos?erro=status_invalido";
         }
@@ -126,7 +131,6 @@ public class ProfessorController {
                                                @RequestParam("parecerResponsavel") String parecerResponsavel,
                                                @RequestParam("frequenciaResponsavel") Integer frequenciaResponsavel,
                                                @RequestParam("notaResponsavel") String notaResponsavel) {
-
         Inscricao inscricao = inscricaoDAO.findById(inscricaoId)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição inválida: " + inscricaoId));
 

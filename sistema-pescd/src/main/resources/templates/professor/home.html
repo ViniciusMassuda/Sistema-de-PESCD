@@ -1,9 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
     <div th:fragment="content">
         <h2>Professor Home</h2>
         <p>Bem-vindo, Professor!</p>
+        <br>
+        <a th:href="@{/professor/lista-alunos}">Ver Alunos e Avaliações</a>
     </div>
 </body>
 </html>
