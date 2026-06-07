@@ -46,12 +46,12 @@
                                 <a th:if="${oferta.statusAluno == 'não enviado'}"
                                    th:href="@{/aluno/oferta/{id}/plano(id=${oferta.id})}"
                                    class="btn btn-sm btn-primary me-1">
-                                    <i class="bi bi-file-earmark-text"></i> Enviar Plano
+                                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{aluno.enviar_plano.botao}">Enviar Plano</span>
                                 </a>
                                 <span th:if="${oferta.statusAluno == 'plano enviado'}"
                                       class="btn btn-sm btn-secondary disabled me-1">
-                                    <i class="bi bi-clock-history"></i> Plano enviado
-                                </span>
+                                          <i class="bi bi-clock-history"></i> <span th:text="#{aluno.enviar_plano.botao_enviado}">Plano enviado</span>
+                                 </span>
                             </div>
 
                             <!-- ==================== AL.03 - Botão Documentação ==================== -->
@@ -59,12 +59,12 @@
                                 <a th:if="${oferta.statusAluno == 'não enviado'}"
                                    th:href="@{/aluno/oferta/{id}/documentacao(id=${oferta.id})}"
                                    class="btn btn-sm btn-info me-1">
-                                    <i class="bi bi-file-earmark-pdf"></i> Enviar Documentação
+                                    <i class="bi bi-file-earmark-pdf"></i> <span th:text="#{aluno.enviar_documentacao.botao}">Enviar Documentação</span>
                                 </a>
                                 <span th:if="${oferta.statusAluno == 'documentação enviada'}"
                                       class="btn btn-sm btn-secondary disabled me-1">
-                                    <i class="bi bi-check-circle"></i> Documentação enviada
-                                </span>
+                                        <i class="bi bi-check-circle"></i> <span th:text="#{aluno.enviar_documentacao.botao_enviado}">Documentação enviada</span>
+                               </span>
                             </div>
 
                             <!-- ==================== AL.04 - Botão Relatório ==================== -->
@@ -72,17 +72,17 @@
                                 <a th:if="${oferta.statusAluno == 'plano aprovado'}"
                                    th:href="@{/aluno/oferta/{id}/relatorio(id=${oferta.id})}"
                                    class="btn btn-sm btn-warning me-1">
-                                    <i class="bi bi-file-earmark-text"></i> Enviar Relatório
+                                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{aluno.enviar_relatorio.botao}">Enviar Relatório</span>
                                 </a>
                                 <span th:if="${oferta.statusAluno == 'relatório enviado'}"
                                       class="btn btn-sm btn-secondary disabled me-1">
-                                    <i class="bi bi-check-circle"></i> Relatório enviado
+                                    <i class="bi bi-check-circle"></i> <span th:text="#{aluno.enviar_relatorio.botao_enviado}">Relatório enviado</span>
                                 </span>
                             </div>
 
                             <!-- Mensagem quando oferta não está em andamento -->
                             <span th:if="${oferta.statusOferta != 'Em andamento'}" class="text-muted">
-                                <i class="bi bi-lock"></i> Indisponível
+                                    <i class="bi bi-lock"></i> Indisponível
                             </span>
                         </td>
                     </tr>
