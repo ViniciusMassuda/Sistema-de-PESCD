@@ -1,4 +1,6 @@
 package br.ufscar.dc.dsw.sistema_pescd.service.impl;
+
+import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao.StatusAluno;
 import br.ufscar.dc.dsw.sistema_pescd.dao.*;
 import br.ufscar.dc.dsw.sistema_pescd.domain.*;
 import br.ufscar.dc.dsw.sistema_pescd.dto.request.*;
