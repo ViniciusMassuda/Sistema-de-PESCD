@@ -2,7 +2,7 @@ package br.ufscar.dc.dsw.sistema_pescd.controller;
 
 import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
-import br.ufscar.dc.dsw.sistema_pescd.domain.StatusAluno;
+import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao.StatusAluno;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

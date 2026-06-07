@@ -59,6 +59,7 @@ public class Inscricao {
     @Column(name = "status", nullable = false)
     private StatusAluno status = StatusAluno.NAO_ENVIADO;
 
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Usuario getAluno() { return aluno; }
@@ -91,4 +92,25 @@ public class Inscricao {
     public void setFrequenciaResponsavel(Integer frequenciaResponsavel) { this.frequenciaResponsavel = frequenciaResponsavel; }
     public String getNotaResponsavel() { return notaResponsavel; }
     public void setNotaResponsavel(String notaResponsavel) { this.notaResponsavel = notaResponsavel; }
+
+    // Enum para status do aluno
+    public enum StatusAluno {
+        NAO_ENVIADO("não enviado"),
+        PLANO_ENVIADO("plano enviado"),
+        PLANO_APROVADO("plano aprovado"),
+        DOCUMENTACAO_ENVIADA("documentação enviada"),
+        RELATORIO_ENVIADO("relatório enviado"),
+        RELATORIO_APROVADO_SUPERVISOR("relatório aprovado pelo supervisor"),
+        CONCLUIDO_RESPONSAVEL("concluído pelo responsável");
+
+        private final String descricao;
+
+        StatusAluno(String descricao) {
+            this.descricao = descricao;
+        }
+
+        public String getDescricao() {
+            return descricao;
+        }
+    }
 }
