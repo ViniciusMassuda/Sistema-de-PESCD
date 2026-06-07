@@ -1,30 +1,57 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
     <div th:fragment="content">
-        <h2 th:text="#{label.offers}">Offers</h2>
-        <table class="table table-striped mt-3">
-            <thead>
-                <tr>
-                    <th th:text="#{label.name}">Name</th>
-                    <th th:text="#{label.semester}">Semester</th>
-                    <th th:text="#{label.startDate}">Start</th>
-                    <th th:text="#{label.endDate}">End</th>
-                    <th th:text="#{label.responsible}">Responsible</th>
-                    <th th:text="#{label.enrolled}">Enrolled</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="oferta : ${ofertas}">
-                    <td th:text="${oferta.nome}"></td>
-                    <td th:text="${oferta.semestre}"></td>
-                    <td th:text="${#temporals.format(oferta.dataInicio, 'dd/MM/yyyy')}"></td>
-                    <td th:text="${#temporals.format(oferta.dataFim, 'dd/MM/yyyy')}"></td>
-                    <td th:text="${oferta.professorResponsavel.nome}"></td>
-                    <td th:text="${inscritosMap.get(oferta.id)}"></td>
-                </tr>
-            </tbody>
-        </table>
+        <div style="padding: 40px; text-align: center;">
+            <h1>Bem-vindo ao Sistema de PESCD</h1>
+            <p style="font-size: 1.2em; color: #666;">Selecione o painel de controle de acordo com seu perfil.</p>
+            
+            <hr style="margin: 30px 0;">
+
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                
+                <!-- BOTÃO PARA PROFESSOR (Visível se logado como PROFESSOR) -->
+                <div sec:authorize="hasRole('PROFESSOR')" style="padding: 20px; border: 2px solid #007bff; border-radius: 10px; background-color: #f0f7ff;">
+                    <h3>Painel de Supervisão</h3>
+                    <p>Gerencie planos de trabalho e relatórios.</p>
+                    <a th:href="@{/professor/home}" 
+                       style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       Ir para Área do Professor
+                    </a>
+                </div>
+
+                <!-- BOTÃO PARA ALUNO (Visível se logado como ALUNO) -->
+                <div sec:authorize="hasRole('ALUNO')" style="padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f0fff4;">
+                    <h3>Painel do Estudante</h3>
+                    <p>Envie sua documentação e acompanhe seu status.</p>
+                    <a th:href="@{/aluno/home}" 
+                       style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       Ir para Área do Aluno
+                    </a>
+                </div>
+
+                <!-- BOTÃO PARA SECRETÁRIO (Visível se logado como SECRETARIO) -->
+                <div sec:authorize="hasRole('SECRETARIO')" style="padding: 20px; border: 2px solid #17a2b8; border-radius: 10px; background-color: #f0fbff;">
+                    <h3>Administração PESCD</h3>
+                    <p>Gerencie ofertas e inscrições.</p>
+                    <a th:href="@{/secretario/home}" 
+                       style="display: inline-block; background-color: #17a2b8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       Ir para Área da Secretaria
+                    </a>
+                </div>
+
+                <!-- MENSAGEM PARA QUEM NÃO ESTÁ LOGADO -->
+                <div sec:authorize="!isAuthenticated()" style="padding: 20px; border: 1px dashed #ccc; border-radius: 10px;">
+                    <h3>Acesse sua Conta</h3>
+                    <p>Faça login para acessar as funcionalidades do sistema.</p>
+                    <a th:href="@{/login}" 
+                       style="display: inline-block; background-color: #6c757d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       Ir para o Login
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
 </body>
 </html>

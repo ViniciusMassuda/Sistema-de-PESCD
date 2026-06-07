@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprovar Relatório do Estágio</title>
+</head>
+<body>
+<h2>Aprovar Relatório do Estágio (Supervisor)</h2>
+<p><strong>Aluno:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
+<form th:action="@{/professor/aprovar-relatorio}" method="post">
+    <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
+    <label for="parecerRelatorio">Parecer do Relatório:</label><br>
+    <textarea id="parecerRelatorio" name="parecerRelatorio" required></textarea><br><br>
+    <label for="frequencia">Indicador de Frequência (%):</label><br>
+    <input type="number" id="frequencia" name="frequencia" min="0" max="100" required><br><br>
+    <label for="nota">Sugestão de Nota:</label><br>
+    <select id="nota" name="nota" required>
+        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+    </select><br><br>
+    <button type="submit">Aprovar Relatório</button>
+    <button type="button" onclick="history.back()">Cancelar</button>
+</form>
+</body>
+</html>
