@@ -29,6 +29,13 @@ public class Inscricao {
     @JoinColumn(name = "documentacao_id")
     private DocumentacaoComprobatoria documentacaoComprobatoria;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "relatorio_id")
+    private RelatorioFinal relatorioFinal;
+
+    @Column(name = "parecer_plano", columnDefinition = "TEXT")
+    private String parecerPlano;
+
     private LocalDateTime dataEnvioPlano;
     private LocalDateTime dataAprovacaoPlano;
 
@@ -64,10 +71,16 @@ public class Inscricao {
     @Column(name = "status", nullable = false)
     private StatusAluno status = StatusAluno.NAO_ENVIADO;
 
+
     // Getters e Setters do Status
     public StatusAluno getStatus() { return status; }
     public void setStatus(StatusAluno status) { this.status = status; }
 
+    public RelatorioFinal getRelatorioFinal() { return relatorioFinal; }
+    public void setRelatorioFinal(RelatorioFinal relatorioFinal) { this.relatorioFinal = relatorioFinal; }
+
+    public String getParecerPlano() { return parecerPlano; }
+    public void setParecerPlano(String parecerPlano) { this.parecerPlano = parecerPlano; }
     // Enum para status do aluno
     public enum StatusAluno {
         NAO_ENVIADO("não enviado"),
