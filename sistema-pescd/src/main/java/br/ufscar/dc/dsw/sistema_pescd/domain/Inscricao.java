@@ -25,6 +25,10 @@ public class Inscricao {
     @JoinColumn(name = "plano_trabalho_id")
     private PlanoTrabalho planoTrabalho;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "documentacao_id")
+    private DocumentacaoComprobatoria documentacaoComprobatoria;
+
     private LocalDateTime dataEnvioPlano;
     private LocalDateTime dataAprovacaoPlano;
 
@@ -42,6 +46,11 @@ public class Inscricao {
 
     public PlanoTrabalho getPlanoTrabalho() { return planoTrabalho; }
     public void setPlanoTrabalho(PlanoTrabalho planoTrabalho) { this.planoTrabalho = planoTrabalho; }
+
+    public DocumentacaoComprobatoria getDocumentacaoComprobatoria() { return documentacaoComprobatoria; }
+    public void setDocumentacaoComprobatoria(DocumentacaoComprobatoria documentacaoComprobatoria) {
+        this.documentacaoComprobatoria = documentacaoComprobatoria;
+    }
 
     public LocalDateTime getDataEnvioPlano() { return dataEnvioPlano; }
     public void setDataEnvioPlano(LocalDateTime dataEnvioPlano) { this.dataEnvioPlano = dataEnvioPlano; }
