@@ -5,8 +5,8 @@
 <div th:fragment="content">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Ofertas</h2>
-        <a th:href="@{/secretario/ofertas/cadastrar}" class="btn btn-primary">
+        <h2 th:text="#{label.offers}">Ofertas</h2>
+        <a th:href="@{/secretario/ofertas/cadastrar}" class="btn btn-primary" th:text="#{label.newOffer}">
             Nova Oferta
         </a>
     </div>
@@ -23,15 +23,15 @@
     <table class="table table-striped text-center align-middle">
         <thead>
         <tr>
-            <th>Nome</th>
-            <th>Semestre</th>
-            <th>Data Início</th>
-            <th>Data Fim</th>
-            <th>Criado em</th>
-            <th>Criado por</th>
-            <th>Professor Responsável</th>
-            <th>Status da Oferta</th>
-            <th>Ações</th>
+            <th th:text="#{label.name}">Nome</th>
+            <th th:text="#{label.semester}">Semestre</th>
+            <th th:text="#{label.startDate}">Data Início</th>
+            <th th:text="#{label.endDate}">Data Fim</th>
+            <th th:text="#{label.createdIn}">Criado em</th>
+            <th th:text="#{label.createdBy}">Criado por</th>
+            <th th:text="#{label.responsible}">Professor Responsável</th>
+            <th th:text="#{label.status}">Status da Oferta</th>
+            <th th:text="#{label.actions}">Ações</th>
         </tr>
         </thead>
 
@@ -50,13 +50,12 @@
             <td>
                 <span class="badge"
                       th:classappend="${o.statusCalculado == 'Em andamento' ? 'bg-success' : (o.statusCalculado == 'Em atraso' ? 'bg-danger' : (o.statusCalculado == 'Concluída' ? 'bg-dark' : 'bg-warning text-dark'))}"
-                      th:text="${o.statusCalculado}">
+                      th:text="#{${o.statusCalculado}}">
                 </span>
             </td>
 
             <td>
-                <a th:href="@{/secretario/ofertas/{id}/detalhes(id=${o.id})}"
-                   class="btn btn-sm btn-warning">
+                <a th:href="@{/secretario/ofertas/{id}/detalhes(id=${o.id})}" class="btn btn-sm btn-warning" th:text="#{label.manageStudents}">
                     Gerenciar Alunos
                 </a>
 
@@ -64,7 +63,7 @@
                     <form th:action="@{/secretario/ofertas/{id}/encerrar(id=${o.id})}" method="post" style="display:inline;"
                           onsubmit="return confirm('S.04 - Confirmação: Deseja realmente encerrar esta oferta e atribuir os créditos aos alunos?');">
                         <input type="hidden" name="instrucoes" value="Instruções normativas da Administração Central do PESCD - Atribuição Automática de Créditos." />
-                        <button type="submit" class="btn btn-sm btn-danger ms-1">
+                        <button type="submit" class="btn btn-sm btn-danger ms-1" th:text="#{label.closeOffer}">
                             Encerrar
                         </button>
                     </form>
