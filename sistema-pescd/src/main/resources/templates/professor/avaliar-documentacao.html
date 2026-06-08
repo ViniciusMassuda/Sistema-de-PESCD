@@ -1,23 +1,26 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Avaliar Documentação Alternativa</title>
-</head>
+<html th:replace="~{layout :: layout(~{::content})}">
 <body>
-<h2>Avaliar Documentação Alternativa (Professor Responsável)</h2>
-<p><strong>Aluno:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
-<form th:action="@{/professor/avaliar-documentacao}" method="post">
-    <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
-    <label for="parecerResponsavel">Parecer sobre a Documentação:</label><br>
-    <textarea id="parecerResponsavel" name="parecerResponsavel" required></textarea><br><br>
-    <label for="frequenciaResponsavel">Frequência Equivalente (%):</label><br>
-    <input type="number" id="frequenciaResponsavel" name="frequenciaResponsavel" min="0" max="100" required><br><br>
-    <label for="notaResponsavel">Nota Definitiva:</label><br>
-    <select id="notaResponsavel" name="notaResponsavel" required>
-        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
-    </select><br><br>
-    <button type="submit">Concluir Avaliação</button>
-</form>
+<div th:fragment="content" style="padding: 20px;">
+    <h2 th:text="#{professor.avaliar_doc.titulo}">Avaliar Documentação Alternativa (Professor Responsável)</h2>
+    <p><strong th:text="#{professor.lista.aluno}">Aluno</strong>: <span th:text="${inscricao.aluno.nome}"></span></p>
+    <form th:action="@{/professor/avaliar-documentacao}" method="post">
+        <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
+        
+        <label for="parecerResponsavel" th:text="#{professor.avaliar_doc.parecer}">Parecer sobre a Documentação:</label><br>
+        <textarea id="parecerResponsavel" name="parecerResponsavel" style="width: 100%; min-height: 100px;" required></textarea><br><br>
+        
+        <label for="frequenciaResponsavel" th:text="#{professor.avaliar_doc.frequencia}">Frequência Equivalente (%):</label><br>
+        <input type="number" id="frequenciaResponsavel" name="frequenciaResponsavel" min="0" max="100" required><br><br>
+        
+        <label for="notaResponsavel" th:text="#{professor.concluir_relatorio.nota_definitiva}">Nota Definitiva:</label><br>
+        <select id="notaResponsavel" name="notaResponsavel" required>
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+        </select><br><br>
+        
+        <button type="submit" style="background-color: #ffc107; color: black; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" th:text="#{professor.lista.btn.concluir_final}">Concluir Avaliação</button>
+        <a th:href="@{/professor/lista-alunos}" style="margin-left: 10px; color: #6c757d; text-decoration: none;" th:text="#{label.cancel}">Cancelar</a>
+    </form>
+</div>
 </body>
 </html>

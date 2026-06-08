@@ -3,49 +3,53 @@
 <body>
     <div th:fragment="content">
         <div style="padding: 40px; text-align: center;">
-            <h1>Bem-vindo ao Sistema de PESCD</h1>
-            <p style="font-size: 1.2em; color: #666;">Selecione o painel de controle de acordo com seu perfil.</p>
+            <h1 th:text="#{index.titulo}">Bem-vindo ao Sistema de PESCD</h1>
+            <p style="font-size: 1.2em; color: #666;" th:text="#{index.subtitulo}">Selecione o painel de controle de acordo com seu perfil.</p>
             
             <hr style="margin: 30px 0;">
 
             <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
                 
-                <!-- BOTÃO PARA PROFESSOR (Visível se logado como PROFESSOR) -->
+                <!-- BOTÃO PARA PROFESSOR -->
                 <div sec:authorize="hasRole('PROFESSOR')" style="padding: 20px; border: 2px solid #007bff; border-radius: 10px; background-color: #f0f7ff;">
-                    <h3>Painel de Supervisão</h3>
-                    <p>Gerencie planos de trabalho e relatórios.</p>
+                    <h3 th:text="#{index.painel_supervisao}">Painel de Supervisão</h3>
+                    <p th:text="#{index.painel_supervisao_desc}">Gerencie planos de trabalho e relatórios.</p>
                     <a th:href="@{/professor/home}" 
-                       style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;"
+                       th:text="#{index.painel_supervisao_btn}">
                        Ir para Área do Professor
                     </a>
                 </div>
 
-                <!-- BOTÃO PARA ALUNO (Visível se logado como ALUNO) -->
+                <!-- BOTÃO PARA ALUNO -->
                 <div sec:authorize="hasRole('ALUNO')" style="padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f0fff4;">
-                    <h3>Painel do Estudante</h3>
-                    <p>Envie sua documentação e acompanhe seu status.</p>
+                    <h3 th:text="#{index.painel_estudante}">Painel do Estudante</h3>
+                    <p th:text="#{index.painel_estudante_desc}">Envie sua documentação e acompanhe seu status.</p>
                     <a th:href="@{/aluno/home}" 
-                       style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;"
+                       th:text="#{index.painel_estudante_btn}">
                        Ir para Área do Aluno
                     </a>
                 </div>
 
-                <!-- BOTÃO PARA SECRETÁRIO (Visível se logado como SECRETARIO) -->
+                <!-- BOTÃO PARA SECRETÁRIO -->
                 <div sec:authorize="hasRole('SECRETARIO')" style="padding: 20px; border: 2px solid #17a2b8; border-radius: 10px; background-color: #f0fbff;">
-                    <h3>Administração PESCD</h3>
-                    <p>Gerencie ofertas e inscrições.</p>
+                    <h3 th:text="#{index.painel_secretaria}">Administração PESCD</h3>
+                    <p th:text="#{index.painel_secretaria_desc}">Gerencie ofertas e inscrições.</p>
                     <a th:href="@{/secretario/home}" 
-                       style="display: inline-block; background-color: #17a2b8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       style="display: inline-block; background-color: #17a2b8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;"
+                       th:text="#{index.painel_secretaria_btn}">
                        Ir para Área da Secretaria
                     </a>
                 </div>
 
                 <!-- MENSAGEM PARA QUEM NÃO ESTÁ LOGADO -->
                 <div sec:authorize="!isAuthenticated()" style="padding: 20px; border: 1px dashed #ccc; border-radius: 10px;">
-                    <h3>Acesse sua Conta</h3>
-                    <p>Faça login para acessar as funcionalidades do sistema.</p>
+                    <h3 th:text="#{index.login_titulo}">Acesse sua Conta</h3>
+                    <p th:text="#{index.login_desc}">Faça login para acessar as funcionalidades do sistema.</p>
                     <a th:href="@{/login}" 
-                       style="display: inline-block; background-color: #6c757d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                       style="display: inline-block; background-color: #6c757d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;"
+                       th:text="#{index.login_btn}">
                        Ir para o Login
                     </a>
                 </div>

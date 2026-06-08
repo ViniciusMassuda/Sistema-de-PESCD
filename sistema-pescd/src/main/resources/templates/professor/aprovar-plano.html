@@ -1,18 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Aprovar Plano de Trabalho</title>
-</head>
+<html th:replace="~{layout :: layout(~{::content})}">
 <body>
-<h2>Aprovar Plano de Trabalho</h2>
-<p><strong>Aluno:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
-<form th:action="@{/professor/aprovar-plano}" method="post">
-    <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
-    <label for="parecerPlano">Parecer do Plano:</label><br>
-    <textarea id="parecerPlano" name="parecerPlano" required></textarea><br><br>
-    <button type="submit">Aprovar Plano</button>
-    <button type="button" onclick="history.back()">Cancelar</button>
-</form>
+<div th:fragment="content" style="padding: 20px;">
+    <h2 th:text="#{professor.aprovar_plano.titulo}">Aprovar Plano de Trabalho</h2>
+    <p><strong th:text="#{professor.lista.aluno}">Aluno</strong>: <span th:text="${inscricao.aluno.nome}"></span></p>
+    <form th:action="@{/professor/aprovar-plano}" method="post">
+        <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
+        <label for="parecerPlano" th:text="#{professor.aprovar_plano.parecer}">Parecer do Plano:</label><br>
+        <textarea id="parecerPlano" name="parecerPlano" style="width: 100%; min-height: 100px;" required></textarea><br><br>
+        <button type="submit" class="btn-action" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" th:text="#{professor.lista.btn.aprovar_plano}">Aprovar Plano</button>
+        <a th:href="@{/professor/lista-alunos}" style="margin-left: 10px; color: #6c757d; text-decoration: none;" th:text="#{label.cancel}">Cancelar</a>
+    </form>
+</div>
 </body>
 </html>

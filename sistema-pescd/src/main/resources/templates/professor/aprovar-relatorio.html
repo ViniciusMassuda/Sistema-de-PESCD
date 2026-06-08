@@ -1,24 +1,25 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Aprovar Relatório do Estágio</title>
-</head>
+<html th:replace="~{layout :: layout(~{::content})}">
 <body>
-<h2>Aprovar Relatório do Estágio (Supervisor)</h2>
-<p><strong>Aluno:</strong> <span th:text="${inscricao.aluno.nome}"></span></p>
-<form th:action="@{/professor/aprovar-relatorio}" method="post">
-    <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
-    <label for="parecerRelatorio">Parecer do Relatório:</label><br>
-    <textarea id="parecerRelatorio" name="parecerRelatorio" required></textarea><br><br>
-    <label for="frequencia">Indicador de Frequência (%):</label><br>
-    <input type="number" id="frequencia" name="frequencia" min="0" max="100" required><br><br>
-    <label for="nota">Sugestão de Nota:</label><br>
-    <select id="nota" name="nota" required>
-        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
-    </select><br><br>
-    <button type="submit">Aprovar Relatório</button>
-    <button type="button" onclick="history.back()">Cancelar</button>
-</form>
+<div th:fragment="content" style="padding: 20px;">
+    <h2 th:text="#{professor.aprovar_relatorio.titulo}">Aprovar Relatório do Estágio (Supervisor)</h2>
+    <p><strong th:text="#{professor.lista.aluno}">Aluno</strong>: <span th:text="${inscricao.aluno.nome}"></span></p>
+    <form th:action="@{/professor/aprovar-relatorio}" method="post">
+        <input type="hidden" name="inscricaoId" th:value="${inscricao.id}" />
+        <label for="parecerRelatorio" th:text="#{professor.aprovar_relatorio.parecer}">Parecer do Relatório:</label><br>
+        <textarea id="parecerRelatorio" name="parecerRelatorio" style="width: 100%; min-height: 100px;" required></textarea><br><br>
+        
+        <label for="frequencia" th:text="#{professor.aprovar_relatorio.frequencia}">Indicador de Frequência (%):</label><br>
+        <input type="number" id="frequencia" name="frequencia" min="0" max="100" required><br><br>
+        
+        <label for="nota" th:text="#{professor.aprovar_relatorio.nota}">Sugestão de Nota:</label><br>
+        <select id="nota" name="nota" required>
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option>
+        </select><br><br>
+        
+        <button type="submit" style="background-color: #17a2b8; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" th:text="#{professor.lista.btn.avaliar_supervisor}">Aprovar Relatório</button>
+        <a th:href="@{/professor/lista-alunos}" style="margin-left: 10px; color: #6c757d; text-decoration: none;" th:text="#{label.cancel}">Cancelar</a>
+    </form>
+</div>
 </body>
 </html>

@@ -3,21 +3,21 @@
 <body>
     <div th:fragment="content">
         <div style="padding: 20px; font-family: sans-serif;">
-            <h2>Painel do Professor</h2>
-            <p>Bem-vindo ao sistema de supervisão do PESCD.</p>
+            <h2 th:text="#{professor.home.titulo}">Painel do Professor</h2>
+            <p th:text="#{professor.home.mensagem}">Bem-vindo ao sistema de supervisão do PESCD.</p>
             
             <hr>
             
             <div style="margin-top: 30px; display: flex; gap: 20px;">
-                <!-- BOTÃO PARA LISTA DE ALUNOS -->
                 <a th:href="@{/professor/lista-alunos}" 
-                   style="display: inline-block; background-color: #007bff; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                   style="display: inline-block; background-color: #007bff; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"
+                   th:text="#{professor.home.botao_lista}">
                    Acessar Lista de Alunos e Aprovações
                 </a>
 
-                <!-- BOTÃO DE ATALHO PARA O H2 CONSOLE -->
                 <a href="/h2-console" target="_blank"
-                   style="display: inline-block; background-color: #6c757d; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                   style="display: inline-block; background-color: #6c757d; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;"
+                   th:text="#{professor.home.botao_h2}">
                    Abrir H2 Console
                 </a>
             </div>

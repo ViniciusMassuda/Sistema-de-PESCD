@@ -2,58 +2,58 @@
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
 <div th:fragment="content" style="padding: 20px;">
-    <h2>Gerenciamento de Alunos e Aprovações</h2>
+    <h2 th:text="#{professor.lista.titulo}">Gerenciamento de Alunos e Aprovações</h2>
 
     <div th:if="${param.sucesso}" style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
-        <strong>Sucesso!</strong> Operação realizada com êxito.
+        <strong th:text="#{label.save}">Sucesso!</strong> <span th:text="#{professor.msg.sucesso}">Operação realizada com êxito.</span>
     </div>
     <div th:if="${param.erro}" style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
-        <strong>Erro de Segurança!</strong> Acesso negado: Status incompatível.
+        <strong th:text="#{professor.msg.erro}">Acesso negado: Status incompatível.</strong>
     </div>
 
     <table style="width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <thead>
             <tr style="background-color: #343a40; color: white;">
-                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Aluno</th>
-                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Fase Atual</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Ações</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; background-color: #6c757d;">Debugs</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;" th:text="#{professor.lista.aluno}">Aluno</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;" th:text="#{professor.lista.fase}">Fase Atual</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;" th:text="#{professor.lista.acoes}">Ações</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; background-color: #6c757d;" th:text="#{professor.lista.debugs}">Debugs</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="i : ${inscricoes}" style="border-bottom: 1px solid #dee2e6;">
                 <td th:text="${i.aluno.nome}" style="padding: 12px; border: 1px solid #dee2e6;"></td>
                 <td style="padding: 12px; border: 1px solid #dee2e6;">
-                    <span style="background-color: #e9ecef; padding: 4px 8px; border-radius: 4px; font-family: monospace;" th:text="${i.status.name()}"></span>
+                    <span style="background-color: #e9ecef; padding: 4px 8px; border-radius: 4px; font-family: monospace;" th:text="${i.status.descricao}"></span>
                 </td>
                 
                 <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">
                     <a th:if="${i.status.name() == 'PLANO_ENVIADO'}" th:href="@{/professor/aprovar-plano/{id}(id=${i.id})}" 
-                       style="background-color: #28a745; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                       Aprovar Plano
-                    </a>
+                       style="background-color: #28a745; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                       th:text="#{professor.lista.btn.aprovar_plano}">Aprovar Plano</a>
+                    
                     <a th:if="${i.status.name() == 'RELATORIO_ENVIADO'}" th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}" 
-                       style="background-color: #17a2b8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                       Avaliar Supervisor
-                    </a>
+                       style="background-color: #17a2b8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                       th:text="#{professor.lista.btn.avaliar_supervisor}">Avaliar Supervisor</a>
+                    
                     <a th:if="${i.status.name() == 'RELATORIO_APROVADO_SUPERVISOR'}" th:href="@{/professor/concluir-relatorio/{id}(id=${i.id})}" 
-                       style="background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                       Concluir Final
-                    </a>
+                       style="background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                       th:text="#{professor.lista.btn.concluir_final}">Concluir Final</a>
+                    
                     <a th:if="${i.status.name() == 'DOCUMENTACAO_ENVIADA'}" th:href="@{/professor/avaliar-documentacao/{id}(id=${i.id})}" 
-                       style="background-color: #ffc107; color: black; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;">
-                       Via Alternativa
-                    </a>
-                    <span th:if="${i.status.name() == 'CONCLUIDO_RESPONSAVEL'}" style="color: #28a745; font-weight: bold;">Finalizado ✓</span>
-                    <span th:if="${i.status.name() == 'NAO_ENVIADO'}" style="color: #6c757d; font-style: italic;">Aguardando...</span>
+                       style="background-color: #ffc107; color: black; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                       th:text="#{professor.lista.btn.via_alternativa}">Via Alternativa</a>
+
+                    <span th:if="${i.status.name() == 'CONCLUIDO_RESPONSAVEL'}" style="color: #28a745; font-weight: bold;" th:text="#{professor.lista.finalizado}">Finalizado ✓</span>
+                    <span th:if="${i.status.name() == 'NAO_ENVIADO'}" style="color: #6c757d; font-style: italic;" th:text="#{professor.lista.aguardando_aluno}">Aguardando...</span>
                 </td>
 
                 <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center; background-color: #f8f9fa;">
                     <div style="display: flex; flex-direction: column; gap: 5px;">
-                        <a th:href="@{/professor/debug/mudar-status/{id}/PLANO_ENVIADO(id=${i.id})}" style="font-size: 0.8em; color: #495057;">[Envio Plano]</a>
-                        <a th:href="@{/professor/debug/mudar-status/{id}/RELATORIO_ENVIADO(id=${i.id})}" style="font-size: 0.8em; color: #495057;">[Envio Relatório]</a>
-                        <a th:href="@{/professor/debug/mudar-status/{id}/DOCUMENTACAO_ENVIADA(id=${i.id})}" style="font-size: 0.8em; color: #495057;">[Via Alternativa]</a>
-                        <a th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}" style="font-size: 0.8em; color: #495057;">[Trava de Segurança]</a>
+                        <a th:href="@{/professor/debug/mudar-status/{id}/PLANO_ENVIADO(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.envio_plano}">[Envio Plano]</a>
+                        <a th:href="@{/professor/debug/mudar-status/{id}/RELATORIO_ENVIADO(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.envio_relatorio}">[Envio Relatório]</a>
+                        <a th:href="@{/professor/debug/mudar-status/{id}/DOCUMENTACAO_ENVIADA(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.via_alternativa}">[Via Alternativa]</a>
+                        <a th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.trava}">[Trava de Segurança]</a>
                     </div>
                 </td>
             </tr>
@@ -61,7 +61,9 @@
     </table>
 
     <div style="margin-top: 20px;">
-        <a th:href="@{/professor/home}" style="color: #007bff; text-decoration: none;">← Voltar para Home do Professor</a>
+        <a th:href="@{/professor/home}" style="color: #007bff; text-decoration: none;">
+           ← <span th:text="#{label.back}">Voltar para Home</span>
+        </a>
     </div>
 </div>
 </body>
