@@ -17,7 +17,6 @@
                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;" th:text="#{professor.lista.aluno}">Aluno</th>
                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;" th:text="#{professor.lista.fase}">Fase Atual</th>
                 <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;" th:text="#{professor.lista.acoes}">Ações</th>
-                <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6; background-color: #6c757d;" th:text="#{professor.lista.debugs}">Debugs</th>
             </tr>
         </thead>
         <tbody>
@@ -46,15 +45,6 @@
 
                     <span th:if="${i.status.name() == 'CONCLUIDO_RESPONSAVEL'}" style="color: #28a745; font-weight: bold;" th:text="#{professor.lista.finalizado}">Finalizado ✓</span>
                     <span th:if="${i.status.name() == 'NAO_ENVIADO'}" style="color: #6c757d; font-style: italic;" th:text="#{professor.lista.aguardando_aluno}">Aguardando...</span>
-                </td>
-
-                <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center; background-color: #f8f9fa;">
-                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                        <a th:href="@{/professor/debug/mudar-status/{id}/PLANO_ENVIADO(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.envio_plano}">[Envio Plano]</a>
-                        <a th:href="@{/professor/debug/mudar-status/{id}/RELATORIO_ENVIADO(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.envio_relatorio}">[Envio Relatório]</a>
-                        <a th:href="@{/professor/debug/mudar-status/{id}/DOCUMENTACAO_ENVIADA(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.via_alternativa}">[Via Alternativa]</a>
-                        <a th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}" style="font-size: 0.8em; color: #495057;" th:text="#{professor.lista.debug.trava}">[Trava de Segurança]</a>
-                    </div>
                 </td>
             </tr>
         </tbody>
