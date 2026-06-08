@@ -4,7 +4,7 @@
 
 <div th:fragment="content">
 
-    <h2 th:text="${oferta.id == null} ? 'Nova Oferta' : 'Editar Oferta'">
+    <h2 th:text="${oferta.id == null} ? #{label.newOffer} : #{label.editUser}">
         Oferta
     </h2>
 
@@ -16,7 +16,7 @@
         <input type="hidden" th:field="*{id}">
 
         <div class="mb-3">
-            <label for="nome" class="form-label">
+            <label for="nome" class="form-label" th:text="#{label.name}">
                 Nome
             </label>
 
@@ -31,7 +31,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="semestre" class="form-label">
+            <label for="semestre" class="form-label" th:text="#{label.semester}">
                 Semestre
             </label>
 
@@ -46,7 +46,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="dataInicio" class="form-label">
+            <label for="dataInicio" class="form-label" th:text="#{label.startDate}">
                 Data de Início
             </label>
 
@@ -61,7 +61,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="dataFim" class="form-label">
+            <label for="dataFim" class="form-label" th:text="#{label.endDate}">
                 Data de Fim
             </label>
 
@@ -76,15 +76,14 @@
         </div>
 
         <div class="mb-3">
-            <label for="professorResponsavel"
-                   class="form-label">
+            <label for="professorResponsavel" class="form-label" th:text="#{label.responsible}">
                 Professor Responsável
             </label>
 
             <select th:field="*{professorResponsavel}"
                     class="form-select">
 
-                <option value="">
+                <option value="" th:text="#{label.actions} + '...'">
                     Selecione um professor
                 </option>
 
@@ -97,12 +96,14 @@
         </div>
 
         <button type="submit"
-                class="btn btn-success">
+                class="btn btn-success"
+                th:text="#{label.save}">
             Salvar
         </button>
 
         <a th:href="@{/secretario/ofertas}"
-           class="btn btn-secondary">
+           class="btn btn-secondary"
+           th:text="#{label.cancel}">
             Cancelar
         </a>
 
