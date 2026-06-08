@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
 <div th:fragment="content" style="padding: 20px;">
@@ -27,24 +27,31 @@
                 </td>
                 
                 <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">
-                    <a th:if="${i.status.name() == 'PLANO_ENVIADO'}" th:href="@{/professor/aprovar-plano/{id}(id=${i.id})}" 
-                       style="background-color: #28a745; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
-                       th:text="#{professor.lista.btn.aprovar_plano}">Aprovar Plano</a>
-                    
-                    <a th:if="${i.status.name() == 'RELATORIO_ENVIADO'}" th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}" 
-                       style="background-color: #17a2b8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
-                       th:text="#{professor.lista.btn.avaliar_supervisor}">Avaliar Supervisor</a>
-                    
-                    <a th:if="${i.status.name() == 'RELATORIO_APROVADO_SUPERVISOR'}" th:href="@{/professor/concluir-relatorio/{id}(id=${i.id})}" 
-                       style="background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
-                       th:text="#{professor.lista.btn.concluir_final}">Concluir Final</a>
-                    
-                    <a th:if="${i.status.name() == 'DOCUMENTACAO_ENVIADA'}" th:href="@{/professor/avaliar-documentacao/{id}(id=${i.id})}" 
-                       style="background-color: #ffc107; color: black; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
-                       th:text="#{professor.lista.btn.via_alternativa}">Via Alternativa</a>
+                    <!-- rng-5: botoes so aparecem se oferta nao estiver encerrada -->
+                    <th:block th:if="${!i.oferta.encerradaSecretario}">
+                        <a th:if="${i.status.name() == 'PLANO_ENVIADO'}" th:href="@{/professor/aprovar-plano/{id}(id=${i.id})}" 
+                           style="background-color: #28a745; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                           th:text="#{professor.lista.btn.aprovar_plano}">Aprovar Plano</a>
+                        
+                        <a th:if="${i.status.name() == 'RELATORIO_ENVIADO'}" th:href="@{/professor/aprovar-relatorio/{id}(id=${i.id})}" 
+                           style="background-color: #17a2b8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                           th:text="#{professor.lista.btn.avaliar_supervisor}">Avaliar Supervisor</a>
+                        
+                        <a th:if="${i.status.name() == 'RELATORIO_APROVADO_SUPERVISOR'}" th:href="@{/professor/concluir-relatorio/{id}(id=${i.id})}" 
+                           style="background-color: #007bff; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                           th:text="#{professor.lista.btn.concluir_final}">Concluir Final</a>
+                        
+                        <a th:if="${i.status.name() == 'DOCUMENTACAO_ENVIADA'}" th:href="@{/professor/avaliar-documentacao/{id}(id=${i.id})}" 
+                           style="background-color: #ffc107; color: black; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-weight: bold;"
+                           th:text="#{professor.lista.btn.via_alternativa}">Via Alternativa</a>
 
-                    <span th:if="${i.status.name() == 'CONCLUIDO_RESPONSAVEL'}" style="color: #28a745; font-weight: bold;" th:text="#{professor.lista.finalizado}">Finalizado ✓</span>
-                    <span th:if="${i.status.name() == 'NAO_ENVIADO'}" style="color: #6c757d; font-style: italic;" th:text="#{professor.lista.aguardando_aluno}">Aguardando...</span>
+                        <span th:if="${i.status.name() == 'CONCLUIDO_RESPONSAVEL'}" style="color: #28a745; font-weight: bold;" th:text="#{professor.lista.finalizado}">Finalizado ✓</span>
+                        <span th:if="${i.status.name() == 'NAO_ENVIADO'}" style="color: #6c757d; font-style: italic;" th:text="#{professor.lista.aguardando_aluno}">Aguardando...</span>
+                    </th:block>
+
+                    <th:block th:if="${i.oferta.encerradaSecretario}">
+                        <span style="color: #6c757d; font-weight: bold;" th:text="#{professor.lista.finalizado}">Encerrada (Leitura)</span>
+                    </th:block>
                 </td>
             </tr>
         </tbody>

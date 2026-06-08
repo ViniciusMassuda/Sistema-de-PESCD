@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
 
@@ -20,7 +20,7 @@
           <form th:action="@{/secretario/ofertas/{id}/alunos/manual(id=${oferta.id})}" method="POST">
             <div class="mb-3">
               <label class="form-label" th:text="#{label.name}">Nome Completo</label>
-              <input type="text" name="nome" class="form-control" required placeholder="Ex: João Silva">
+              <input type="text" name="nome" class="form-control" required placeholder="Ex: JoÃ£o Silva">
             </div>
             <div class="mb-3">
               <label class="form-label" th:text="#{label.username}">E-mail (Username)</label>
@@ -55,7 +55,7 @@
               </div>
 
               <div class="form-text text-muted mt-2">
-                <strong th:text="#{label.csvHeaderFormat}">Formato esperado do cabeçalho:</strong><br>
+                <strong th:text="#{label.csvHeaderFormat}">Formato esperado do cabeÃ§alho:</strong><br>
                 <code>RA, NOME_COMPLETO, EMAIL</code>
               </div>
             </div>
@@ -73,9 +73,9 @@
         <thead class="table-light">
         <tr>
           <th th:text="#{label.name}">Nome</th>
-          <th th:text="#{label.username}">E-mail (Usuário)</th>
+          <th th:text="#{label.username}">E-mail (UsuÃ¡rio)</th>
           <th th:text="#{label.status}">Status no PESCD</th>
-          <th th:text="#{label.actions}">Ações</th>
+          <th th:text="#{label.actions}">AÃ§Ãµes</th>
         </tr>
         </thead>
         <tbody>
@@ -93,7 +93,7 @@
         </tr>
         <tr th:if="${#lists.isEmpty(inscricoes)}">
           <td colspan="4" class="text-center text-muted py-4" th:text="#{message.noStudents}">
-            Nenhum aluno inscrito nesta oferta até o momento.
+            Nenhum aluno inscrito nesta oferta atÃ© o momento.
           </td>
         </tr>
         </tbody>
@@ -116,3 +116,4 @@
   }
 </script>
 </html>
+

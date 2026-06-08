@@ -10,7 +10,6 @@
 
             <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
                 
-                <!-- BOTAO PARA PROFESSOR -->
                 <div sec:authorize="hasRole('PROFESSOR')" style="padding: 20px; border: 2px solid #007bff; border-radius: 10px; background-color: #f0f7ff;">
                     <h3 th:text="#{index.painel_supervisao}">Painel de Supervisao</h3>
                     <p th:text="#{index.painel_supervisao_desc}">Gerencie planos de trabalho e relatorios.</p>
@@ -21,7 +20,6 @@
                     </a>
                 </div>
 
-                <!-- BOTAO PARA ALUNO -->
                 <div sec:authorize="hasRole('ALUNO')" style="padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f0fff4;">
                     <h3 th:text="#{index.painel_estudante}">Painel do Estudante</h3>
                     <p th:text="#{index.painel_estudante_desc}">Envie sua documentacao e acompanhe seu status.</p>
@@ -32,7 +30,6 @@
                     </a>
                 </div>
 
-                <!-- BOTAO PARA SECRETARIO -->
                 <div sec:authorize="hasRole('SECRETARIO')" style="padding: 20px; border: 2px solid #17a2b8; border-radius: 10px; background-color: #f0fbff;">
                     <h3 th:text="#{index.painel_secretaria}">Administracao PESCD</h3>
                     <p th:text="#{index.painel_secretaria_desc}">Gerencie ofertas e inscricoes.</p>
@@ -43,7 +40,6 @@
                     </a>
                 </div>
 
-                <!-- MENSAGEM PARA QUEM NAO ESTA LOGADO -->
                 <div sec:authorize="!isAuthenticated()" style="padding: 20px; border: 1px dashed #ccc; border-radius: 10px;">
                     <h3 th:text="#{index.login_titulo}">Acesse sua Conta</h3>
                     <p th:text="#{index.login_desc}">Faca login para acessar as funcionalidades do sistema.</p>
@@ -56,9 +52,6 @@
 
             </div>
 
-            <!-- listagem de ofertas para visitantes (v.01) -->
-            <!-- exibe nome, semestre, datas, professor e total de inscritos -->
-            
             <div style="margin-top: 50px; text-align: left;">
                 <h2 style="border-bottom: 2px solid #007bff; padding-bottom: 10px;" th:text="#{label.offers}">Ofertas Disponiveis</h2>
                 

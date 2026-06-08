@@ -41,13 +41,18 @@ public class AlunoServiceImpl implements IAlunoService {
 
     @Override
     public PlanoTrabalhoResponseDTO enviarPlanoTrabalho(Long oid, Usuario al, PlanoTrabalhoRequestDTO req) {
-        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
-        if (i.getStatus() != StatusAluno.NAO_ENVIADO) throw new RuntimeException("Ja enviado");
+        Oferta oferta = ofertaDAO.findById(oid).orElseThrow();
+        // rng-5: impede envio em oferta concluida
+        if (oferta.isEncerradaSecretario()) throw new RuntimeException("oferta ja concluida. apenas leitura permitida.");
+
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, oferta).orElseThrow();
+        if (i.getStatus() != StatusAluno.NAO_ENVIADO) throw new RuntimeException("plano ja enviado anteriormente.");
+        
         Usuario supervisor = usuarioDAO.findById(req.getProfessorSupervisorId()).orElseThrow();
 
         MultipartFile arquivo = req.getArquivo();
         if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " + (arquivo.getSize() / 1024 / 1024) + "MB");
+            throw new RuntimeException("o arquivo pdf deve ter no maximo 5mb.");
         }
 
         String path = salvar(req.getArquivo(), al.getId(), oid, "planos");
@@ -58,22 +63,29 @@ public class AlunoServiceImpl implements IAlunoService {
         i.setDataEnvioPlano(LocalDateTime.now());
         inscricaoDAO.save(i);
 
-        return planoTrabalhoMapper.toResponseDTO(p, "Sucesso");
+        return planoTrabalhoMapper.toResponseDTO(p, "plano enviado com sucesso.");
     }
 
     @Override
     public boolean podeEnviarPlano(Long oid, Usuario al) {
-        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElse(null)).orElse(null);
+        Oferta o = ofertaDAO.findById(oid).orElse(null);
+        if (o == null || o.isEncerradaSecretario()) return false; // rng-5
+        
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, o).orElse(null);
         return i != null && i.getStatus() == StatusAluno.NAO_ENVIADO;
     }
 
     @Override
     public DocumentacaoResponseDTO enviarDocumentacao(Long oid, Usuario al, DocumentacaoRequestDTO req) {
-        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+        Oferta oferta = ofertaDAO.findById(oid).orElseThrow();
+        // rng-5: trava para oferta encerrada
+        if (oferta.isEncerradaSecretario()) throw new RuntimeException("oferta encerrada.");
+
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, oferta).orElseThrow();
 
         MultipartFile arquivo = req.getArquivo();
         if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " + (arquivo.getSize() / 1024 / 1024) + "MB");
+            throw new RuntimeException("o arquivo pdf deve ter no maximo 5mb.");
         }
 
         String path = salvar(req.getArquivo(), al.getId(), oid, "documentacoes");
@@ -82,22 +94,29 @@ public class AlunoServiceImpl implements IAlunoService {
         i.setDocumentacaoComprobatoria(d);
         i.setStatus(StatusAluno.DOCUMENTACAO_ENVIADA);
         inscricaoDAO.save(i);
-        return documentacaoMapper.toResponseDTO(d, "Sucesso");
+        return documentacaoMapper.toResponseDTO(d, "documentacao enviada.");
     }
 
     @Override
     public boolean podeEnviarDocumentacao(Long oid, Usuario al) {
-        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElse(null)).orElse(null);
+        Oferta o = ofertaDAO.findById(oid).orElse(null);
+        if (o == null || o.isEncerradaSecretario()) return false; // rng-5
+        
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, o).orElse(null);
         return i != null && i.getStatus() == StatusAluno.NAO_ENVIADO;
     }
 
     @Override
     public RelatorioResponseDTO enviarRelatorio(Long oid, Usuario al, RelatorioRequestDTO req) {
-        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElseThrow()).orElseThrow();
+        Oferta oferta = ofertaDAO.findById(oid).orElseThrow();
+        // rng-5: impede alteracao de dados
+        if (oferta.isEncerradaSecretario()) throw new RuntimeException("oferta concluida.");
+
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, oferta).orElseThrow();
 
         MultipartFile arquivo = req.getArquivo();
         if (arquivo.getSize() > 5 * 1024 * 1024) {
-            throw new RuntimeException("O arquivo PDF deve ter no máximo 5MB. Tamanho atual: " + (arquivo.getSize() / 1024 / 1024) + "MB");
+            throw new RuntimeException("o arquivo pdf deve ter no maximo 5mb.");
         }
 
         String path = salvar(req.getArquivo(), al.getId(), oid, "relatorios");
@@ -106,12 +125,15 @@ public class AlunoServiceImpl implements IAlunoService {
         i.setRelatorioFinal(r);
         i.setStatus(StatusAluno.RELATORIO_ENVIADO);
         inscricaoDAO.save(i);
-        return relatorioMapper.toResponseDTO(r, "Sucesso");
+        return relatorioMapper.toResponseDTO(r, "relatorio enviado.");
     }
 
     @Override
     public boolean podeEnviarRelatorio(Long oid, Usuario al) {
-        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, ofertaDAO.findById(oid).orElse(null)).orElse(null);
+        Oferta o = ofertaDAO.findById(oid).orElse(null);
+        if (o == null || o.isEncerradaSecretario()) return false; // rng-5
+        
+        Inscricao i = inscricaoDAO.findByAlunoAndOferta(al, o).orElse(null);
         return i != null && i.getStatus() == StatusAluno.PLANO_APROVADO;
     }
 

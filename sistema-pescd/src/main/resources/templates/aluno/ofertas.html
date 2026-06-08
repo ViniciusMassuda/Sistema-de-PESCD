@@ -35,8 +35,8 @@
                         <td th:text="${#temporals.format(oferta.dataFim, 'dd/MM/yyyy')}">Fim</td>
                         <td th:text="${oferta.professorResponsavel}">Professor</td>
                         <td>
-                            <span th:class="'badge ' + (${oferta.statusOferta == 'Em andamento'} ? 'bg-success' : (${oferta.statusOferta == 'Atrasada'} ? 'bg-danger' : 'bg-secondary'))"
-                                  th:text="#{${'aluno.status.' + (oferta.statusOferta == 'Em andamento' ? 'em_andamento' : (oferta.statusOferta == 'Atrasada' ? 'atrasada' : 'nao_iniciada'))}}">
+                            <span th:class="'badge ' + (${oferta.statusOferta == 'Em andamento'} ? 'bg-success' : (${oferta.statusOferta == 'Em atraso'} ? 'bg-danger' : (${oferta.statusOferta == 'Concluída'} ? 'bg-dark' : 'bg-warning text-dark')))"
+                                  th:text="${oferta.statusOferta}">
                                 Status
                             </span>
                         </td>

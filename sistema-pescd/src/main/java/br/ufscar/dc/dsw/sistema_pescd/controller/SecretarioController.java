@@ -73,6 +73,20 @@ public class SecretarioController {
         return "secretario/oferta/cadastro";
     }
 
+    @GetMapping("/ofertas/editar/{id}")
+    public String preEditar(@PathVariable("id") Long id, Model model) {
+        model.addAttribute("oferta", ofertaService.buscarPorId(id));
+        model.addAttribute("professores", usuarioService.buscarProfessores());
+        return "secretario/oferta/cadastro";
+    }
+
+    @GetMapping("/ofertas/excluir/{id}")
+    public String excluir(@PathVariable("id") Long id, RedirectAttributes attr) {
+        ofertaService.excluir(id);
+        attr.addFlashAttribute("success", "Oferta excluída com sucesso.");
+        return "redirect:/secretario/ofertas";
+    }
+
 
 
     // HISTÓRIA S.01: CRIAÇÃO DE OFERTA COM METADADOS E FALLBACK DE NOME
@@ -131,6 +145,13 @@ public class SecretarioController {
         model.addAttribute("oferta", oferta);
         model.addAttribute("inscricoes", inscricoes);
         return "secretario/oferta/alunos";
+    }
+
+    @GetMapping("/ofertas/{oid}/alunos/excluir/{id}")
+    public String excluirAluno(@PathVariable("oid") Long oid, @PathVariable("id") Long id, RedirectAttributes attr) {
+        inscricaoDAO.deleteById(id);
+        attr.addFlashAttribute("success", "Aluno removido da oferta com sucesso.");
+        return "redirect:/secretario/ofertas/" + oid + "/alunos";
     }
 
     // Fluxo A: Cadastro Manual de Aluno na Oferta (S.02 - RN-1 e RN-2)

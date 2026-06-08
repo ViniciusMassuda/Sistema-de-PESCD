@@ -53,9 +53,9 @@ public class Oferta {
     public String getUsuarioCriador() { return usuarioCriador; }
     public void setUsuarioCriador(String usuarioCriador) { this.usuarioCriador = usuarioCriador; }
     public String getStatusCalculado() {
-        if (this.encerradaSecretario) return "Concluido";
-        if (this.concluidaProfessor) return "Aguardando";
-        if (java.time.LocalDate.now().isAfter(this.getDataFim())) return "Atraso";
-        return "Ativa";
+        if (this.encerradaSecretario) return "Concluída";
+        if (this.concluidaProfessor) return "Aguardando encerramento do secretário";
+        if (java.time.LocalDate.now().isAfter(this.getDataFim())) return "Em atraso";
+        return "Em andamento";
     }
 }

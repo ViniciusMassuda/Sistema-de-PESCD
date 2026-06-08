@@ -32,4 +32,15 @@ public class OfertaService implements IOfertaService {
     public void salvar(Oferta oferta) {
         dao.save(oferta);
     }
+
+    @Override
+    public Oferta buscarPorId(Long id) {
+        return dao.findById(id).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void excluir(Long id) {
+        dao.deleteById(id);
+    }
 }

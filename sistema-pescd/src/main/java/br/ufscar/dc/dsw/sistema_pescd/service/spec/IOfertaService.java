@@ -11,6 +11,10 @@ public interface IOfertaService {
 
     // Contrato para o método que persiste ou atualiza os dados de uma oferta no banco
     void salvar(Oferta oferta);
+
+    Oferta buscarPorId(Long id);
+
+    void excluir(Long id);
 }
 
 

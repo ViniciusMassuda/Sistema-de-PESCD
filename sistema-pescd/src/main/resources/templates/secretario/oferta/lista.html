@@ -50,12 +50,12 @@
             <td>
                 <span class="badge"
                       th:classappend="${o.statusCalculado == 'Em andamento' ? 'bg-success' : (o.statusCalculado == 'Em atraso' ? 'bg-danger' : (o.statusCalculado == 'Concluída' ? 'bg-dark' : 'bg-warning text-dark'))}"
-                      th:text="#{${o.statusCalculado}}">
+                      th:text="${o.statusCalculado}">
                 </span>
             </td>
 
             <td>
-                <a th:href="@{/secretario/ofertas/{id}/detalhes(id=${o.id})}" class="btn btn-sm btn-warning" th:text="#{label.manageStudents}">
+                <a th:href="@{/secretario/ofertas/{id}/detalhes(id=${o.id})}" class="btn btn-sm btn-info" th:text="#{label.manageStudents}">
                     Gerenciar Alunos
                 </a>
 
