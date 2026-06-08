@@ -5,32 +5,32 @@
 <div th:fragment="content">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 th:text="'Acompanhamento: ' + ${oferta.nome}">Detalhes da Oferta</h2>
+        <h2 th:text="|#{label.viewDetails}: ${oferta.nome}|">Detalhes da Oferta</h2>
         <div>
             <a th:href="@{/secretario/ofertas/{id}/alunos(id=${oferta.id})}" class="btn btn-warning me-2">
-                <i class="bi bi-person-plus-fill"></i> Adicionar / Importar Alunos
+                <i class="bi bi-person-plus-fill"></i> <span th:text="#{label.addImportStudents}">Adicionar / Importar Alunos</span>
             </a>
-            <a th:href="@{/secretario/ofertas}" class="btn btn-secondary">Voltar para Ofertas</a>
+            <a th:href="@{/secretario/ofertas}" class="btn btn-secondary" th:text="#{label.back}">Voltar para Ofertas</a>
         </div>
     </div>
 
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-dark text-white font-weight-bold">Informações Gerais da Oferta</div>
+        <div class="card-header bg-dark text-white font-weight-bold" th:text="#{label.studentData}">Informações Gerais da Oferta</div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-4">
-                    <p><strong>Semestre:</strong> <span th:text="${oferta.semestre}"></span></p>
-                    <p><strong>Professor Responsável:</strong> <span th:text="${oferta.professorResponsavel.nome}"></span></p>
+                    <p><strong th:text="|#{label.semester}:|">Semestre:</strong> <span th:text="${oferta.semestre}"></span></p>
+                    <p><strong th:text="|#{label.responsible}:|">Professor Responsável:</strong> <span th:text="${oferta.professorResponsavel.nome}"></span></p>
                 </div>
                 <div class="col-md-4">
-                    <p><strong>Data Início:</strong> <span th:text="${oferta.dataInicio}"></span></p>
-                    <p><strong>Data Fim:</strong> <span th:text="${oferta.dataFim}"></span></p>
+                    <p><strong th:text="|#{label.startDate}:|">Data Início:</strong> <span th:text="${oferta.dataInicio}"></span></p>
+                    <p><strong th:text="|#{label.endDate}:|">Data Fim:</strong> <span th:text="${oferta.dataFim}"></span></p>
                 </div>
                 <div class="col-md-4">
-                    <p><strong>Status Atual:</strong>
+                    <p><strong th:text="|#{label.status}:|">Status Atual:</strong>
                         <span class="badge"
                               th:classappend="${oferta.statusCalculado == 'Em andamento' ? 'bg-success' : (oferta.statusCalculado == 'Em atraso' ? 'bg-danger' : 'bg-secondary')}"
-                              th:text="${oferta.statusCalculado}">
+                              th:text="#{${oferta.statusCalculado}}">
                         </span>
                     </p>
                 </div>
@@ -39,15 +39,15 @@
     </div>
 
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white font-weight-bold">Alunos Inscritos e Andamento do PESCD</div>
+        <div class="card-header bg-primary text-white font-weight-bold" th:text="#{label.studentHistory}">Alunos Inscritos e Andamento do PESCD</div>
         <div class="card-body">
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-light">
                 <tr>
-                    <th>Nome do Aluno</th>
-                    <th>E-mail (Usuário)</th>
-                    <th>Status Atual</th>
-                    <th>Ações</th>
+                    <th th:text="#{label.name}">Nome do Aluno</th>
+                    <th th:text="#{label.username}">E-mail (Usuário)</th>
+                    <th th:text="#{label.status}">Status Atual</th>
+                    <th th:text="#{label.actions}">Ações</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -55,16 +55,16 @@
                     <td th:text="${ins.aluno.nome}"></td>
                     <td th:text="${ins.aluno.username}"></td>
                     <td>
-                        <span class="badge bg-info text-dark" th:text="${ins.status}">não enviado</span>
+                        <span class="badge bg-info text-dark" th:text="#{${ins.status}}">não enviado</span>
                     </td>
                     <td>
-                        <a th:href="@{/secretario/inscricao/{id}/detalhes(id=${ins.id})}" class="btn btn-sm btn-outline-primary">
+                        <a th:href="@{/secretario/inscricao/{id}/detalhes(id=${ins.id})}" class="btn btn-sm btn-outline-primary" th:text="#{label.viewDetails}">
                             Ver Detalhes
                         </a>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(inscricoes)}">
-                    <td colspan="4" class="text-center text-muted py-4">
+                    <td colspan="4" class="text-center text-muted py-4" th:text="#{message.noStudents}">
                         Nenhum aluno inscrito nesta oferta até o momento.
                     </td>
                 </tr>
