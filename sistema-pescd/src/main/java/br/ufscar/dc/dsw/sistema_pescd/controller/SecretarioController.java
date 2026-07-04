@@ -61,8 +61,16 @@ public class SecretarioController {
 
     @GetMapping("/ofertas")
     public String listar(Model model) {
-        // Busca todas as ofertas registradas para renderizar na tabela principal
-        model.addAttribute("ofertas", ofertaService.buscarTodosOrdenado());
+        // 1. Busca todas as ofertas
+        List<Oferta> todasAsOfertas = ofertaService.buscarTodosOrdenado();
+
+        // 2. Filtra removendo as ofertas cujo status calculado seja "Concluída"
+        List<Oferta> ofertasAtivas = todasAsOfertas.stream()
+                .filter(o -> !o.getStatusCalculado().equals("Concluída"))
+                .toList();
+
+        // 3. Envia apenas as ativas para a tabela HTML
+        model.addAttribute("ofertas", ofertasAtivas);
         return "secretario/oferta/lista";
     }
 
@@ -290,19 +298,21 @@ public class SecretarioController {
                                  RedirectAttributes attr,
                                  java.security.Principal principal) {
         try {
-            Oferta oferta = ofertaDAO.findById(id).orElseThrow();
+            Oferta oferta = ofertaService.buscarPorId(id);
 
-            // RN-1: Validação de pré-requisito de estado (Apenas se estiver esperando o secretário)
+            if (oferta == null) {
+                attr.addFlashAttribute("erro", "Oferta não encontrada.");
+                return "redirect:/secretario/ofertas";
+            }
+
             if (!"Aguardando encerramento do secretário".equals(oferta.getStatusCalculado())) {
                 attr.addFlashAttribute("erro", "Esta oferta não está aguardando encerramento.");
                 return "redirect:/secretario/ofertas";
             }
 
-            // RN-2: Geração de metadados temporais e nominais do encerramento para auditoria
             String usuarioLogado = (principal != null) ? principal.getName() : "secretario@ufscar.br";
             LocalDateTime timestampEncerramento = LocalDateTime.now();
 
-            // RN-2 e RN-3: Impressão do relatório de auditoria exigido diretamente no console
             System.out.println("=== LOG DE ENCERRAMENTO (S.04) ===");
             System.out.println("Oferta ID: " + id);
             System.out.println("Status Alterado para: Concluída");
@@ -311,8 +321,9 @@ public class SecretarioController {
             System.out.println("Instruções de Encerramento (RN-3): " + instrucoes);
             System.out.println("==================================");
 
-            // Persistência das alterações
-            ofertaDAO.save(oferta);
+            // CHAMA O SERVICE QUE ATUALIZA O STATUS NO BANCO
+            ofertaService.encerrar(id, usuarioLogado);
+
             attr.addFlashAttribute("success", "Oferta encerrada com sucesso e créditos atribuídos aos alunos!");
 
         } catch (Exception e) {
