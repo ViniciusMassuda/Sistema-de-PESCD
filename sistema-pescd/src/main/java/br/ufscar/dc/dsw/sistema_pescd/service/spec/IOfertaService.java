@@ -15,6 +15,6 @@ public interface IOfertaService {
     Oferta buscarPorId(Long id);
 
     void excluir(Long id);
+
+    void encerrar(Long id, String usuarioLogado);
 }
-
-
