@@ -8,9 +8,9 @@ import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IOfertaService;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IUsuarioService;
+import br.ufscar.dc.dsw.sistema_pescd.service.impl.InscricaoService;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -28,27 +28,28 @@ import java.util.List;
 @RequestMapping("/secretario")
 public class SecretarioController {
 
+    private final IOfertaService ofertaService;
+    private final IUsuarioService usuarioService;
+    private final UsuarioDAO usuarioDAO;
+    private final InscricaoDAO inscricaoDAO;
+    private final OfertaDAO ofertaDAO;
+    private final InscricaoService inscricaoService;
 
-    // INJEÇÃO DE DEPENDÊNCIAS (DAOs e Services)
 
-    @Autowired
-    private IOfertaService ofertaService;
-
-    @Autowired
-    private IUsuarioService usuarioService;
-
-    @Autowired
-    private UsuarioDAO usuarioDAO;
-
-    @Autowired
-    private InscricaoDAO inscricaoDAO;
-
-    @Autowired
-    private OfertaDAO ofertaDAO;
-
-    @Autowired
-    private br.ufscar.dc.dsw.sistema_pescd.service.impl.InscricaoService inscricaoService;
-
+    // Construtor único para injeção automática de dependências
+    public SecretarioController(IOfertaService ofertaService,
+                                IUsuarioService usuarioService,
+                                UsuarioDAO usuarioDAO,
+                                InscricaoDAO inscricaoDAO,
+                                OfertaDAO ofertaDAO,
+                                InscricaoService inscricaoService) {
+        this.ofertaService = ofertaService;
+        this.usuarioService = usuarioService;
+        this.usuarioDAO = usuarioDAO;
+        this.inscricaoDAO = inscricaoDAO;
+        this.ofertaDAO = ofertaDAO;
+        this.inscricaoService = inscricaoService;
+    }
 
 
     // NAVEGAÇÃO BÁSICA E VISUALIZAÇÃO
