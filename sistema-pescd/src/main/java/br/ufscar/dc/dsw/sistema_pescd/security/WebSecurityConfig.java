@@ -18,9 +18,11 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationSuccessHandler successHandler) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/", "/login", "/css/**", "/js/**", "/error", "/h2-console/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/api/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin((form) -> form
