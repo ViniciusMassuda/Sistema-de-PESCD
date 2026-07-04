@@ -25,6 +25,10 @@ public class Oferta {
     private boolean encerradaSecretario = false;
     @Column(name = "concluida_professor", nullable = false)
     private boolean concluidaProfessor = false;
+    @Column(name = "data_concluida_professor")
+    private LocalDateTime dataConcluidaProfessor;
+    @Column(name = "licoes_aprendidas", columnDefinition = "TEXT")
+    private String licoesAprendidas;
     @ManyToOne
     @JoinColumn(name = "professor_responsavel_id", nullable = false)
     private Usuario professorResponsavel;
@@ -48,6 +52,10 @@ public class Oferta {
     public void setEncerradaSecretario(boolean encerradaSecretario) { this.encerradaSecretario = encerradaSecretario; }
     public boolean isConcluidaProfessor() { return concluidaProfessor; }
     public void setConcluidaProfessor(boolean concluidaProfessor) { this.concluidaProfessor = concluidaProfessor; }
+    public LocalDateTime getDataConcluidaProfessor() { return dataConcluidaProfessor; }
+    public void setDataConcluidaProfessor(LocalDateTime dataConcluidaProfessor) { this.dataConcluidaProfessor = dataConcluidaProfessor; }
+    public String getLicoesAprendidas() { return licoesAprendidas; }
+    public void setLicoesAprendidas(String licoesAprendidas) { this.licoesAprendidas = licoesAprendidas; }
     public LocalDateTime getDataCriacao() { return dataCriacao; }
     public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
     public String getUsuarioCriador() { return usuarioCriador; }

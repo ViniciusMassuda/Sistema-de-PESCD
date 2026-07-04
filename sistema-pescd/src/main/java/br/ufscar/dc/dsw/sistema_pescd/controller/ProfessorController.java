@@ -1,9 +1,11 @@
 package br.ufscar.dc.dsw.sistema_pescd.controller;
 
 import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
+import br.ufscar.dc.dsw.sistema_pescd.dao.OfertaDAO;
 import br.ufscar.dc.dsw.sistema_pescd.dao.UsuarioDAO;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao.StatusAluno;
+import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,7 +14,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controlador responsável pelas requisições da área do professor.
@@ -34,12 +39,17 @@ public class ProfessorController {
     @Autowired
     private UsuarioDAO usuarioDAO;
 
+    @Autowired
+    private OfertaDAO ofertaDAO;
+
     @GetMapping("/lista-alunos")
     public String listaAlunos(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
         List<Inscricao> vinculados = inscricaoDAO.findByProfessorVinculado(professor.getId());
         model.addAttribute("inscricoes", vinculados);
         model.addAttribute("professorLogadoId", professor.getId());
+        // PR.03: ofertas do responsável para botão de encerramento
+        model.addAttribute("ofertasResponsavel", ofertaDAO.findByProfessorResponsavelId(professor.getId()));
         return "professor/lista-alunos";
     }
 
@@ -205,5 +215,94 @@ public class ProfessorController {
         inscricao.setStatus(StatusAluno.CONCLUIDO_RESPONSAVEL);
         inscricaoDAO.save(inscricao);
         return "redirect:/professor/lista-alunos?sucesso=documentacao_avaliada";
+    }
+
+    // PR.03 – Encerrar Oferta
+
+    // PR.03: valida pré-condições e calcula estatísticas para confirmação de encerramento
+    @GetMapping("/encerrar-oferta/{ofertaId}")
+    public String exibirTelaEncerrarOferta(@PathVariable Long ofertaId,
+                                           @AuthenticationPrincipal UserDetails userDetails,
+                                           Model model) {
+        Oferta oferta = ofertaDAO.findById(ofertaId).orElseThrow();
+
+        if (oferta.isEncerradaSecretario()) {
+            return "redirect:/professor/lista-alunos?erro=oferta_ja_encerrada";
+        }
+        if (oferta.isConcluidaProfessor()) {
+            return "redirect:/professor/lista-alunos?erro=oferta_ja_concluida_professor";
+        }
+        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
+        if (!oferta.getProfessorResponsavel().getId().equals(professor.getId())) {
+            return "redirect:/professor/lista-alunos?erro=nao_responsavel";
+        }
+        // PR.03: todos os alunos devem estar CONCLUIDO_RESPONSAVEL
+        List<Inscricao> inscricoes = inscricaoDAO.findByOfertaId(ofertaId);
+        boolean todosConluidos = inscricoes.stream()
+                .allMatch(i -> i.getStatus() == StatusAluno.CONCLUIDO_RESPONSAVEL);
+        if (!todosConluidos) {
+            return "redirect:/professor/lista-alunos?erro=alunos_pendentes";
+        }
+
+        // PR.03: estatísticas consolidadas
+        double mediaFrequencia = inscricoes.stream()
+                .filter(i -> i.getFrequenciaResponsavel() != null)
+                .mapToInt(Inscricao::getFrequenciaResponsavel)
+                .average()
+                .orElse(0.0);
+
+        Map<String, Long> contagemNotas = new HashMap<>();
+        for (String nota : List.of("A", "B", "C", "D", "E")) {
+            long count = inscricoes.stream()
+                    .filter(i -> nota.equals(i.getNotaResponsavel()))
+                    .count();
+            contagemNotas.put(nota, count);
+        }
+        long viaEstagio = inscricoes.stream()
+                .filter(i -> i.getPlanoTrabalho() != null)
+                .count();
+        long viaDocumentacao = inscricoes.stream()
+                .filter(i -> i.getDocumentacaoComprobatoria() != null)
+                .count();
+
+        model.addAttribute("oferta", oferta);
+        model.addAttribute("inscricoes", inscricoes);
+        model.addAttribute("mediaFrequencia", String.format("%.1f", mediaFrequencia));
+        model.addAttribute("contagemNotas", contagemNotas);
+        model.addAttribute("viaEstagio", viaEstagio);
+        model.addAttribute("viaDocumentacao", viaDocumentacao);
+        model.addAttribute("totalAlunos", inscricoes.size());
+
+        return "professor/encerrar-oferta";
+    }
+
+    // PR.03: persiste lições aprendidas e marca oferta como concluída pelo professor
+    @PostMapping("/encerrar-oferta")
+    public String processarEncerrarOferta(@RequestParam("ofertaId") Long ofertaId,
+                                          @RequestParam("licoesAprendidas") String licoesAprendidas,
+                                          @AuthenticationPrincipal UserDetails userDetails) {
+        Oferta oferta = ofertaDAO.findById(ofertaId).orElseThrow();
+
+        if (oferta.isEncerradaSecretario() || oferta.isConcluidaProfessor()) {
+            return "redirect:/professor/lista-alunos?erro=acesso_negado";
+        }
+        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
+        if (!oferta.getProfessorResponsavel().getId().equals(professor.getId())) {
+            return "redirect:/professor/lista-alunos?erro=acesso_negado";
+        }
+        // PR.03: revalida status antes de persistir
+        List<Inscricao> inscricoes = inscricaoDAO.findByOfertaId(ofertaId);
+        boolean todosConcluidos = inscricoes.stream()
+                .allMatch(i -> i.getStatus() == StatusAluno.CONCLUIDO_RESPONSAVEL);
+        if (!todosConcluidos) {
+            return "redirect:/professor/lista-alunos?erro=alunos_pendentes";
+        }
+
+        oferta.setLicoesAprendidas(licoesAprendidas);
+        oferta.setConcluidaProfessor(true);
+        oferta.setDataConcluidaProfessor(LocalDateTime.now());
+        ofertaDAO.save(oferta);
+
+        return "redirect:/professor/lista-alunos?sucesso=oferta_encerrada";
     }
 }

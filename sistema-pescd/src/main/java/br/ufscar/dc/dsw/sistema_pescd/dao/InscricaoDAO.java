@@ -26,4 +26,6 @@ public interface InscricaoDAO extends JpaRepository<Inscricao, Long> {
     // busca todos os alunos que tem alguma ligacao com o professor logado (responsavel ou supervisor)
     @Query("SELECT DISTINCT i FROM Inscricao i LEFT JOIN i.planoTrabalho p WHERE i.oferta.professorResponsavel.id = :professorId OR p.professorSupervisor.id = :professorId")
     List<Inscricao> findByProfessorVinculado(@Param("professorId") Long professorId);
+    // PR.03: inscrições por oferta
+    List<Inscricao> findByOfertaId(Long ofertaId);
 }

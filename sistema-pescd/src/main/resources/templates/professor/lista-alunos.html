@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
 <div th:fragment="content" style="padding: 20px;">
@@ -57,6 +57,59 @@
         </tbody>
     </table>
 
+    <!-- PR.03: encerramento de ofertas -->
+    <div th:if="${ofertasResponsavel != null and !ofertasResponsavel.isEmpty()}"
+         style="margin-top: 32px;">
+        <hr>
+        <h3 style="margin-bottom: 12px;">Minhas Ofertas — Encerramento (PR.03)</h3>
+        <table style="width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <thead>
+                <tr style="background-color: #495057; color: white;">
+                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Oferta</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Semestre</th>
+                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Status</th>
+                    <th style="padding: 12px; text-align: center; border: 1px solid #dee2e6;">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="oferta : ${ofertasResponsavel}" style="border-bottom: 1px solid #dee2e6;">
+                    <td th:text="${oferta.nome}" style="padding: 12px; border: 1px solid #dee2e6;"></td>
+                    <td th:text="${oferta.semestre}" style="padding: 12px; border: 1px solid #dee2e6;"></td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">
+                        <span th:if="${oferta.encerradaSecretario}"
+                              style="background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">
+                            Encerrada pelo Secretário
+                        </span>
+                        <span th:if="${!oferta.encerradaSecretario and oferta.concluidaProfessor}"
+                              style="background-color: #ffc107; color: #212529; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">
+                            Aguardando Secretário
+                        </span>
+                        <span th:if="${!oferta.encerradaSecretario and !oferta.concluidaProfessor}"
+                              style="background-color: #0dcaf0; color: #212529; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem;">
+                            Em Andamento
+                        </span>
+                    </td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6; text-align: center;">
+                        <!-- PR.03: botão ativo -->
+                        <a th:if="${!oferta.encerradaSecretario and !oferta.concluidaProfessor}"
+                           th:href="@{/professor/encerrar-oferta/{id}(id=${oferta.id})}"
+                           style="background-color: #dc3545; color: white; padding: 6px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+                            Encerrar Oferta
+                        </a>
+                        <!-- PR.03: aguardando secretário -->
+                        <span th:if="${!oferta.encerradaSecretario and oferta.concluidaProfessor}"
+                              style="color: #6c757d; font-style: italic; font-size: 0.85rem;">
+                            Encerramento enviado ✓
+                        </span>
+                        <!-- PR.03: encerrada -->
+                        <span th:if="${oferta.encerradaSecretario}"
+                              style="color: #6c757d; font-size: 0.85rem;">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     <div style="margin-top: 20px;">
         <a th:href="@{/professor/home}" style="color: #007bff; text-decoration: none;">
            ← <span th:text="#{label.back}">Voltar para Home</span>
@@ -65,3 +118,4 @@
 </div>
 </body>
 </html>
+
