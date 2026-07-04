@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @Transactional(readOnly = true)
@@ -19,8 +20,8 @@ public class OfertaService implements IOfertaService {
     private OfertaDAO dao;
 
 
-     // Aciona o repositório customizado para retornar a lista de ofertas do banco.
-     // Garante que na tela do secretário (lista.html) os semestres mais novos apareçam no topo.
+    // Aciona o repositório customizado para retornar a lista de ofertas do banco.
+    // Garante que na tela do secretário (lista.html) os semestres mais novos apareçam no topo.
     @Override
     public List<Oferta> buscarTodosOrdenado() {
         return dao.findAllOrderedBySemestre();
@@ -42,5 +43,22 @@ public class OfertaService implements IOfertaService {
     @Transactional
     public void excluir(Long id) {
         dao.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void encerrar(Long id, String usuarioLogado) {
+        Oferta oferta = dao.findById(id).orElse(null);
+        if (oferta != null) {
+            // 1. RN-2: Mudar a flag que o método getStatusCalculado() usa para retornar "Concluída"
+            oferta.setEncerradaSecretario(true);
+
+            // 2. RN-2: Registrar o timestamp do encerramento e o usuário nas colunas existentes
+            oferta.setDataCriacao(LocalDateTime.now());
+            oferta.setUsuarioCriador(usuarioLogado);
+
+            // 3. Salva a oferta atualizada no banco de dados
+            dao.save(oferta);
+        }
     }
 }
