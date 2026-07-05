@@ -2,7 +2,7 @@
 <html th:replace="~{layout :: layout(~{::content})}">
 <body>
 <div th:fragment="content" style="padding: 20px;">
-    <h2 th:text="#{professor.lista.titulo}">Gerenciamento de Alunos e Aprovações</h2>
+    <h2 th:text="#{professor.lista.titulo}">Gerenciamento de Alunos</h2>
 
     <div th:if="${param.sucesso}" style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
         <strong th:text="#{label.save}">Sucesso!</strong> <span th:text="#{professor.msg.sucesso}">Operação realizada com êxito.</span>
@@ -61,7 +61,7 @@
     <div th:if="${ofertasResponsavel != null and !ofertasResponsavel.isEmpty()}"
          style="margin-top: 32px;">
         <hr>
-        <h3 style="margin-bottom: 12px;">Minhas Ofertas — Encerramento (PR.03)</h3>
+        <h3 style="margin-bottom: 12px;">Minhas Ofertas</h3>
         <table style="width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <thead>
                 <tr style="background-color: #495057; color: white;">

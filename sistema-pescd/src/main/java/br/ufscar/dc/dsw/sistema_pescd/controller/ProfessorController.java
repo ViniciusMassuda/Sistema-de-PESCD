@@ -19,16 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Controlador responsável pelas requisições da área do professor.
- *
- * @Controller - Indica que esta classe é um controlador Spring MVC
- * @RequestMapping("/professor") - Define a URL base /professor para todos os endpoints
- *
- * Todas as rotas mapeadas neste controlador são acessíveis apenas
- * por usuários com papel ROLE_PROFESSOR (configurado no Spring Security).
- */
-
 @Controller
 @RequestMapping("/professor")
 public class ProfessorController {
