@@ -333,4 +333,51 @@ public class SecretarioController {
 
         return "redirect:/secretario/ofertas";
     }
+
+    // USER STORY SURPRESA: EXPORTAR RELATÓRIO EM TEXTO DOS ALUNOS DA OFERTA
+
+    // Mapeia uma requisição HTTP GET para esta URL, capturando o ID da oferta
+    @GetMapping("/ofertas/{id}/alunos/exportar")
+    // Indica que o retorno do método deve ser escrito diretamente no corpo da resposta HTTP
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<byte[]> exportarAlunos(@PathVariable("id") Long id) {
+
+        // 1. Busca a oferta no banco de dados usando o ID fornecido na URL
+        Oferta oferta = ofertaDAO.findById(id).orElse(null);
+
+        // Se a oferta não existir, retorna um erro
+        if (oferta == null) return org.springframework.http.ResponseEntity.notFound().build();
+
+        // 2. Busca todas as inscrições (matrículas) vinculadas àquela oferta específica
+        List<Inscricao> inscricoes = inscricaoDAO.findByOferta(oferta);
+
+        // 3. Instancia um StringBuilder para montar o conteúdo do arquivo de texto
+        StringBuilder txt = new StringBuilder();
+
+        // Escreve o título do relatório
+        txt.append("=== LISTA DE ALUNOS - ").append(oferta.getNome()).append(" ===\n");
+
+        // Escreve o cabeçalho das colunas do relatório
+        txt.append("RA, Nome, Email\n");
+
+        // 4. Percorre a lista de inscrições para extrair os dados de cada aluno
+        for (Inscricao ins : inscricoes) {
+            txt.append(ins.getAluno().getPassword()).append(", ")
+                    .append(ins.getAluno().getNome()).append(", ")
+                    .append(ins.getAluno().getUsername()).append("\n");
+        }
+
+        // 5. Converte todo o texto acumulado no StringBuilder em um array de bytes
+        byte[] csvBytes = txt.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        // 6. Monta e retorna a resposta
+        return org.springframework.http.ResponseEntity.ok()
+                // Cabeçalho que força o navegador a abrir a janela de download como um anexo com o nome definido
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=alunos_oferta_" + id + ".txt")
+                // Define o tipo de mídia da resposta como texto puro
+                .contentType(org.springframework.http.MediaType.TEXT_PLAIN)
+                // Injeta o array de bytes (o conteúdo do arquivo)
+                .body(csvBytes);
+    }
+
 }
