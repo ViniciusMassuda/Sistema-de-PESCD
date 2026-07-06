@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfessorController {
 
-    // O controlador consome apenas interfaces de serviço, sem dependência direta de DAOs
+    // Refatorado: O controlador consome apenas interfaces de serviço, sem dependência direta de DAOs
     private final IProfessorService professorService;
     private final IInscricaoService inscricaoService;
     private final IOfertaService ofertaService;

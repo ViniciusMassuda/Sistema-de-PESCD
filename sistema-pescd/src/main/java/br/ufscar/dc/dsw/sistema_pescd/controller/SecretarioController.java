@@ -142,7 +142,7 @@ public class SecretarioController {
                                        @RequestParam("senha") String senha,
                                        RedirectAttributes attr) {
         try {
-            // Delega o cadastro e a matrícula manual para a camada de serviço
+            // Refatorado: Delega o cadastro e a matrícula manual para a camada de serviço
             inscricaoService.matricularAlunoManual(ofertaId, nome, email, senha);
             attr.addFlashAttribute("success", "Aluno adicionado com sucesso!");
         } catch (IllegalStateException | IllegalArgumentException e) {
@@ -160,7 +160,7 @@ public class SecretarioController {
                                     @RequestParam("file") MultipartFile file,
                                     RedirectAttributes attr) {
         try {
-            // Delega a leitura, parseamento do CSV e o cadastro em lote para a camada de serviço
+            // Refatorado: Delega a leitura, parseamento do CSV e o cadastro em lote para a camada de serviço
             inscricaoService.importarAlunosCsv(ofertaId, file);
             attr.addFlashAttribute("success", "Arquivo CSV processado com sucesso!");
         } catch (RuntimeException e) {

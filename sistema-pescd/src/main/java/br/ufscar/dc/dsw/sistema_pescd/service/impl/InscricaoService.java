@@ -58,7 +58,7 @@ public class InscricaoService implements IInscricaoService {
         dao.deleteById(id);
     }
 
-    // Lógica de negócio da matrícula manual encapsulada sob transação
+    // Refatorado: Lógica de negócio da matrícula manual encapsulada sob transação
     @Override
     @Transactional
     public void matricularAlunoManual(Long ofertaId, String nome, String email, String senha) {
@@ -90,7 +90,7 @@ public class InscricaoService implements IInscricaoService {
         dao.save(inscricao);
     }
 
-    // Processamento de stream e parseamento de CSV isolado na camada de serviço
+    // Refatorado: Processamento de stream e parseamento de CSV isolado na camada de serviço
     @Override
     @Transactional
     public void importarAlunosCsv(Long ofertaId, MultipartFile file) {
