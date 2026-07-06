@@ -18,11 +18,11 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationSuccessHandler successHandler) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/", "/login", "/css/**", "/js/**", "/error", "/h2-console/**").permitAll()
-                    .requestMatchers("/api/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/api/**").permitAll()
+                .requestMatchers("/", "/login", "/css/**", "/js/**", "/error").permitAll()
+                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin((form) -> form
@@ -33,9 +33,7 @@ public class WebSecurityConfig {
             .logout((logout) -> logout
                 .logoutSuccessUrl("/")
                 .permitAll()
-            )
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+            );
 
         return http.build();
     }
