@@ -64,6 +64,7 @@ public class OfertaService implements IOfertaService {
         }
     }
 
+    // Retorna a lista de ofertas sob a responsabilidade de um professor específico
     @Override
     public List<Oferta> buscarPorProfessorResponsavel(Long professorId) {
         return dao.findByProfessorResponsavelId(professorId);

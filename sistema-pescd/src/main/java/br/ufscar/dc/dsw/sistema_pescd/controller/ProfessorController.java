@@ -27,11 +27,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfessorController {
 
+    // Refatoração: Removido DAO direto e o @Autowired. Agora é usado apenas serviço e injeção por construtor.
     private final IProfessorService professorService;
     private final IInscricaoService inscricaoService;
     private final IOfertaService ofertaService;
     private final IUsuarioService usuarioService;
 
+    // Exibe a lista de alunos vinculados e as turmas sob a responsabilidade do professor logado
     @GetMapping("/lista-alunos")
     public String listaAlunos(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         Usuario professor = usuarioService.buscarPorUsername(userDetails.getUsername());
@@ -42,6 +44,7 @@ public class ProfessorController {
         return "professor/lista-alunos";
     }
 
+    // Abre a página de aprovação de plano de trabalho após validar as permissões e o status da inscrição
     @GetMapping("/aprovar-plano/{inscricaoId}")
     public String exibirTelaAprovarPlano(@PathVariable Long inscricaoId,
                                          @AuthenticationPrincipal UserDetails userDetails,
@@ -67,6 +70,7 @@ public class ProfessorController {
         return "professor/aprovar-plano";
     }
 
+    // Recebe e processa a aprovação do plano de trabalho
     @PostMapping("/aprovar-plano")
     public String processarAprovarPlano(@RequestParam("inscricaoId") Long inscricaoId,
                                         @RequestParam("parecerPlano") String parecerPlano,
@@ -82,6 +86,7 @@ public class ProfessorController {
         }
     }
 
+    // Exibe a página para o professor supervisor dar a nota e a frequência preliminares no relatório final
     @GetMapping("/aprovar-relatorio/{inscricaoId}")
     public String exibirTelaAprovarRelatorio(@PathVariable Long inscricaoId, 
                                              @AuthenticationPrincipal UserDetails userDetails,
@@ -106,6 +111,7 @@ public class ProfessorController {
         return "professor/aprovar-relatorio";
     }
 
+    // Processa a avaliação de relatório enviada pelo supervisor
     @PostMapping("/aprovar-relatorio")
     public String processarAprovarRelatorio(@RequestParam("inscricaoId") Long inscricaoId,
                                             @RequestParam("parecerRelatorio") String parecerRelatorio,
@@ -125,6 +131,7 @@ public class ProfessorController {
         }
     }
 
+    // Exibe a tela de conclusão final de estágio para o professor responsável homologar nota e frequência
     @GetMapping("/concluir-relatorio/{inscricaoId}")
     public String exibirTelaConcluirRelatorio(@PathVariable Long inscricaoId, 
                                               @AuthenticationPrincipal UserDetails userDetails,
@@ -148,6 +155,7 @@ public class ProfessorController {
         return "professor/concluir-relatorio";
     }
 
+    // Processa a conclusão final do estágio pelo professor responsável
     @PostMapping("/concluir-relatorio")
     public String processarConcluirRelatorio(@RequestParam("inscricaoId") Long inscricaoId,
                                              @RequestParam("parecerResponsavel") String parecerResponsavel,
@@ -167,6 +175,7 @@ public class ProfessorController {
         }
     }
 
+    // Abre a tela de avaliação de dispensa (via alternativa) para o professor responsável
     @GetMapping("/avaliar-documentacao/{inscricaoId}")
     public String exibirTelaAvaliarDocumentacao(@PathVariable Long inscricaoId, 
                                                 @AuthenticationPrincipal UserDetails userDetails,
@@ -190,6 +199,7 @@ public class ProfessorController {
         return "professor/avaliar-documentacao";
     }
 
+    // Processa a avaliação e o parecer final sobre a dispensa de estágio
     @PostMapping("/avaliar-documentacao")
     public String processarAvaliarDocumentacao(@RequestParam("inscricaoId") Long inscricaoId,
                                                @RequestParam("parecerResponsavel") String parecerResponsavel,
@@ -211,7 +221,7 @@ public class ProfessorController {
 
     // PR.03 – Encerrar Oferta
 
-    // PR.03: valida pré-condições e calcula estatísticas para confirmação de encerramento
+    // Valida pré-requisitos e exibe a tela de estatísticas para confirmação do encerramento da turma
     @GetMapping("/encerrar-oferta/{ofertaId}")
     public String exibirTelaEncerrarOferta(@PathVariable Long ofertaId,
                                            @AuthenticationPrincipal UserDetails userDetails,
@@ -241,7 +251,7 @@ public class ProfessorController {
         }
     }
 
-    // PR.03: persiste lições aprendidas e marca oferta como concluída pelo professor
+    // Salva as lições aprendidas e conclui a oferta por parte do docente
     @PostMapping("/encerrar-oferta")
     public String processarEncerrarOferta(@RequestParam("ofertaId") Long ofertaId,
                                           @RequestParam("licoesAprendidas") String licoesAprendidas,

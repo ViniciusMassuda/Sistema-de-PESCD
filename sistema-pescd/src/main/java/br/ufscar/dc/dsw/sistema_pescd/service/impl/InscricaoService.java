@@ -58,7 +58,7 @@ public class InscricaoService implements IInscricaoService {
         dao.deleteById(id);
     }
 
-    // Realiza a matrícula manual de um aluno em uma oferta
+    // Cadastra o aluno se ele for novo e cria a inscrição na oferta de forma transacional
     @Override
     @Transactional
     public void matricularAlunoManual(Long ofertaId, String nome, String email, String senha) {
@@ -89,7 +89,7 @@ public class InscricaoService implements IInscricaoService {
         dao.save(inscricao);
     }
 
-    // Importa e matricula alunos a partir de um arquivo CSV
+    // Lê o arquivo CSV, cadastra alunos novos com senha padrão (RA) e os inscreve na oferta
     @Override
     @Transactional
     public void importarAlunosCsv(Long ofertaId, MultipartFile file) {

@@ -112,7 +112,7 @@ public class SecretarioController {
 
     // HISTÓRIA S.02: VINCULAÇÃO E MATRÍCULA DE ALUNOS (MANUAL E EM LOTE VIA CSV)
 
-    // Exibe o painel de gerenciamento de alunos de uma oferta específica
+    // Exibe a tela de gerenciamento de alunos inscritos em uma oferta específica
     @GetMapping("/ofertas/{id}/alunos")
     public String gerenciarAlunos(@PathVariable("id") Long id, Model model) {
         Oferta oferta = ofertaService.buscarPorId(id);
@@ -126,6 +126,7 @@ public class SecretarioController {
         return "secretario/oferta/alunos";
     }
 
+    // Exclui a inscrição de um aluno na oferta
     @GetMapping("/ofertas/{oid}/alunos/excluir/{id}")
     public String excluirAluno(@PathVariable("oid") Long oid, @PathVariable("id") Long id, RedirectAttributes attr) {
         inscricaoService.excluir(id);
@@ -133,7 +134,7 @@ public class SecretarioController {
         return "redirect:/secretario/ofertas/" + oid + "/alunos";
     }
 
-    // Fluxo A: Cadastro Manual de Aluno na Oferta (S.02 - RN-1 e RN-2)
+    // Aciona o serviço para realizar a matrícula manual de um aluno
     @PostMapping("/ofertas/{id}/alunos/manual")
     public String adicionarAlunoManual(@PathVariable("id") Long ofertaId,
                                        @RequestParam("nome") String nome,
@@ -151,7 +152,7 @@ public class SecretarioController {
         return "redirect:/secretario/ofertas/" + ofertaId + "/alunos";
     }
 
-    // Fluxo B: Upload e Processamento de Arquivo CSV (S.02 - RN-3)
+    // Aciona o serviço para realizar a importação de alunos em lote via arquivo CSV
     @PostMapping("/ofertas/{id}/alunos/csv")
     public String importarAlunosCsv(@PathVariable("id") Long ofertaId,
                                     @RequestParam("file") MultipartFile file,

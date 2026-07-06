@@ -55,6 +55,7 @@ public class UsuarioService implements IUsuarioService {
         return dao.findByRoleIn(Arrays.asList(Usuario.Role.SECRETARIO, Usuario.Role.PROFESSOR));
     }
 
+    // Retorna os dados do usuário a partir do username (e-mail)
     @Override
     @Transactional(readOnly = true)
     public Usuario buscarPorUsername(String username) {
