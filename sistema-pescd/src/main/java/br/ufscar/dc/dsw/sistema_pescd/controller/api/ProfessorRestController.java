@@ -36,6 +36,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Professor não encontrado")
     })
+            // Busca todos os alunos que este professor orienta (seja como supervisor ou responsável)
     public ResponseEntity<?> listarAlunos(@RequestParam("username") String username) {
         try {
             List<InscricaoDTO> lista = professorService.listarAlunosVinculados(username);
@@ -52,6 +53,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Plano aprovado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio")
     })
+            // Recebe o ID da inscrição via JSON, valida as regras de negócio e aprova o plano de trabalho
     public ResponseEntity<?> aprovarPlano(@RequestBody AcaoInscricaoRequestDTO request,
                                           @RequestParam("username") String username) {
         try {
@@ -70,6 +72,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Relatório aprovado pelo supervisor"),
             @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio")
     })
+            // O Professor Supervisor aprova o relatório do aluno e sugere uma nota/frequência
     public ResponseEntity<?> aprovarRelatorio(@RequestBody AcaoInscricaoRequestDTO request,
                                               @RequestParam("username") String username) {
         try {
@@ -88,6 +91,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Relatório concluído pelo responsável"),
             @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio")
     })
+            // O Professor Responsável dá o parecer final e definitivo após o supervisor ter aprovado
     public ResponseEntity<?> concluirRelatorio(@RequestBody AcaoInscricaoRequestDTO request,
                                                @RequestParam("username") String username) {
         try {
@@ -106,6 +110,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Documentação avaliada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio")
     })
+            // Avalia os documentos PDF de alunos que solicitaram dispensa ou aproveitamento de horas
     public ResponseEntity<?> avaliarDocumentacao(@RequestBody AcaoInscricaoRequestDTO request,
                                                  @RequestParam("username") String username) {
         try {
@@ -124,6 +129,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Estatísticas calculadas com sucesso"),
             @ApiResponse(responseCode = "400", description = "Pré-condições não atendidas")
     })
+            // Valida se a oferta pode ser encerrada (todos alunos concluídos) e calcula as estatísticas finais
     public ResponseEntity<?> buscarEstatisticasOferta(@PathVariable Long ofertaId,
                                                       @RequestParam("username") String username) {
         try {
@@ -142,6 +148,7 @@ public class ProfessorRestController {
             @ApiResponse(responseCode = "200", description = "Oferta encerrada com sucesso pelo professor"),
             @ApiResponse(responseCode = "400", description = "Erro de validação ou regra de negócio")
     })
+            // Salva as lições aprendidas (feedback) e marca a oferta como encerrada pelo professor
     public ResponseEntity<?> encerrarOferta(@RequestBody EncerrarOfertaRequestDTO request,
                                             @RequestParam("username") String username) {
         try {
