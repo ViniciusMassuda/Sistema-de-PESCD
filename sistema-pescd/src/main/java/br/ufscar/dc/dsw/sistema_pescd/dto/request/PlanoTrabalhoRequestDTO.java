@@ -19,6 +19,7 @@ public class PlanoTrabalhoRequestDTO {
     private Long professorSupervisorId;
 
     @NotNull(message = "{validation.arquivo.required}")
+    @io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary", description = "Arquivo PDF do Plano (Máx 5MB)")
     private MultipartFile arquivo;
 
     // Getters e Setters

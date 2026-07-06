@@ -35,6 +35,7 @@ public class ProfessorServiceImpl implements IProfessorService {
     @Transactional(readOnly = true)
     public List<InscricaoDTO> listarAlunosVinculados(String username) {
         Usuario professor = buscarProfessor(username);
+        // Busca todas as inscrições onde este professor é o supervisor logado
         List<Inscricao> inscricoes = inscricaoDAO.findByProfessorVinculado(professor.getId());
         return inscricoes.stream().map(this::toDTO).collect(Collectors.toList());
     }
@@ -45,10 +46,14 @@ public class ProfessorServiceImpl implements IProfessorService {
         Inscricao inscricao = buscarInscricao(request.getInscricaoId());
         Usuario professor = buscarProfessor(username);
 
+        // 1. Verifica se a oferta ainda está ativa e se o professor logado é o supervisor do aluno
         validarOfertaNaoEncerrada(inscricao.getOferta());
         validarSupervisor(inscricao, professor);
+        
+        // 2. Garante que o plano está na fase correta para ser aprovado
         validarStatus(inscricao, StatusAluno.PLANO_ENVIADO, "O plano precisa estar com status PLANO_ENVIADO.");
 
+        // 3. Salva o parecer e avança o status do aluno para a próxima etapa
         inscricao.setParecerPlano(request.getParecer());
         inscricao.setStatus(StatusAluno.PLANO_APROVADO);
         inscricao.setDataAprovacaoPlano(LocalDateTime.now());
@@ -61,11 +66,13 @@ public class ProfessorServiceImpl implements IProfessorService {
         Inscricao inscricao = buscarInscricao(request.getInscricaoId());
         Usuario professor = buscarProfessor(username);
 
+        // 1. Validações de segurança e regras de negócio da oferta e do supervisor
         validarOfertaNaoEncerrada(inscricao.getOferta());
         validarSupervisor(inscricao, professor);
         validarStatus(inscricao, StatusAluno.RELATORIO_ENVIADO, "O relatório precisa estar com status RELATORIO_ENVIADO.");
         validarNotaEFrequencia(request);
 
+        // 2. Salva o parecer, a nota preliminar e avança para a aprovação do responsável
         inscricao.setParecerRelatorioSupervisor(request.getParecer());
         inscricao.setFrequenciaSupervisor(request.getFrequencia());
         inscricao.setNotaSupervisor(request.getNota());
@@ -79,12 +86,14 @@ public class ProfessorServiceImpl implements IProfessorService {
         Inscricao inscricao = buscarInscricao(request.getInscricaoId());
         Usuario professor = buscarProfessor(username);
 
+        // 1. O responsável verifica se a oferta está ativa e se o relatório já passou pelo supervisor
         validarOfertaNaoEncerrada(inscricao.getOferta());
         validarResponsavel(inscricao, professor);
         validarStatus(inscricao, StatusAluno.RELATORIO_APROVADO_SUPERVISOR,
                 "O relatório precisa estar com status RELATORIO_APROVADO_SUPERVISOR.");
         validarNotaEFrequencia(request);
 
+        // 2. Consolida a nota e frequência finais e conclui a inscrição do aluno
         inscricao.setParecerRelatorioResponsavel(request.getParecer());
         inscricao.setFrequenciaResponsavel(request.getFrequencia());
         inscricao.setNotaResponsavel(request.getNota());
@@ -98,12 +107,14 @@ public class ProfessorServiceImpl implements IProfessorService {
         Inscricao inscricao = buscarInscricao(request.getInscricaoId());
         Usuario professor = buscarProfessor(username);
 
+        // 1. Garante que é o professor responsável que está avaliando a documentação
         validarOfertaNaoEncerrada(inscricao.getOferta());
         validarResponsavel(inscricao, professor);
         validarStatus(inscricao, StatusAluno.DOCUMENTACAO_ENVIADA,
                 "A documentação precisa estar com status DOCUMENTACAO_ENVIADA.");
         validarNotaEFrequencia(request);
 
+        // 2. Aprova a dispensa e conclui a inscrição do aluno
         inscricao.setParecerRelatorioResponsavel(request.getParecer());
         inscricao.setFrequenciaResponsavel(request.getFrequencia());
         inscricao.setNotaResponsavel(request.getNota());
@@ -118,6 +129,7 @@ public class ProfessorServiceImpl implements IProfessorService {
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
         Usuario professor = buscarProfessor(username);
 
+        // 1. Verificações rígidas de estado da oferta para evitar encerramento duplicado
         if (!oferta.getProfessorResponsavel().getId().equals(professor.getId())) {
             throw new IllegalStateException("Apenas o professor responsável pode encerrar a oferta.");
         }
@@ -128,15 +140,15 @@ public class ProfessorServiceImpl implements IProfessorService {
             throw new IllegalStateException("Esta oferta já foi concluída pelo professor.");
         }
 
+        // 2. Regra de Negócio: A oferta só pode ser encerrada se TODOS os alunos já estiverem concluídos
         List<Inscricao> inscricoes = inscricaoDAO.findByOfertaId(ofertaId);
-
         boolean todosConcluidos = inscricoes.stream()
                 .allMatch(i -> i.getStatus() == StatusAluno.CONCLUIDO_RESPONSAVEL);
         if (!todosConcluidos) {
             throw new IllegalStateException("Nem todos os alunos estão com status CONCLUIDO_RESPONSAVEL.");
         }
 
-        // Consolida as estatísticas da oferta para encerramento
+        // 3. Processamento das estatísticas (Média de frequência e contagem de cada nota)
         double mediaFrequencia = inscricoes.stream()
                 .filter(i -> i.getFrequenciaResponsavel() != null)
                 .mapToInt(Inscricao::getFrequenciaResponsavel)
@@ -153,6 +165,7 @@ public class ProfessorServiceImpl implements IProfessorService {
         long viaEstagio = inscricoes.stream().filter(i -> i.getPlanoTrabalho() != null).count();
         long viaDocumentacao = inscricoes.stream().filter(i -> i.getDocumentacaoComprobatoria() != null).count();
 
+        // 4. Monta e retorna o DTO consolidado para a interface visualizar
         EstatisticasOfertaResponseDTO dto = new EstatisticasOfertaResponseDTO();
         dto.setOfertaId(oferta.getId());
         dto.setNomeOferta(oferta.getNome());
@@ -172,6 +185,7 @@ public class ProfessorServiceImpl implements IProfessorService {
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
         Usuario professor = buscarProfessor(username);
 
+        // 1. Verificações de acesso e estado da oferta
         if (!oferta.getProfessorResponsavel().getId().equals(professor.getId())) {
             throw new IllegalStateException("Apenas o professor responsável pode encerrar a oferta.");
         }
@@ -179,6 +193,7 @@ public class ProfessorServiceImpl implements IProfessorService {
             throw new IllegalStateException("Esta oferta já foi encerrada ou concluída.");
         }
 
+        // 2. Revalidação de segurança: garantir que nenhum aluno ficou pendente
         List<Inscricao> inscricoes = inscricaoDAO.findByOfertaId(request.getOfertaId());
         boolean todosConcluidos = inscricoes.stream()
                 .allMatch(i -> i.getStatus() == StatusAluno.CONCLUIDO_RESPONSAVEL);
@@ -186,6 +201,7 @@ public class ProfessorServiceImpl implements IProfessorService {
             throw new IllegalStateException("Nem todos os alunos estão com status CONCLUIDO_RESPONSAVEL.");
         }
 
+        // 3. Salva a avaliação final da turma e marca como concluída pelo professor
         oferta.setLicoesAprendidas(request.getDescricaoLicoesAprendidas());
         oferta.setConcluidaProfessor(true);
         oferta.setDataConcluidaProfessor(LocalDateTime.now());

@@ -20,9 +20,9 @@ public class WebSecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/", "/login", "/css/**", "/js/**", "/error", "/h2-console/**").permitAll()
-                    .requestMatchers("/api/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN").requestMatchers("/api/**").permitAll()
+                .requestMatchers("/", "/login", "/css/**", "/js/**", "/error", "/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin((form) -> form
