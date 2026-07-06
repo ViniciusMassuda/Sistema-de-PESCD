@@ -6,21 +6,18 @@ import br.ufscar.dc.dsw.sistema_pescd.dao.UsuarioDAO;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class DatabaseChecker implements CommandLineRunner {
 
-    @Autowired
-    private UsuarioDAO usuarioDAO;
-
-    @Autowired
-    private OfertaDAO ofertaDAO;
-
-    @Autowired
-    private InscricaoDAO inscricaoDAO;
+    private final UsuarioDAO usuarioDAO;
+    private final OfertaDAO ofertaDAO;
+    private final InscricaoDAO inscricaoDAO;
 
     @Override
     public void run(String... args) throws Exception {
