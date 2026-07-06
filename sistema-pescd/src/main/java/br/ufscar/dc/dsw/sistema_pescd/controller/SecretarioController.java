@@ -142,9 +142,11 @@ public class SecretarioController {
                                        @RequestParam("senha") String senha,
                                        RedirectAttributes attr) {
         try {
+            // Delega o cadastro e a matrícula manual para a camada de serviço
             inscricaoService.matricularAlunoManual(ofertaId, nome, email, senha);
             attr.addFlashAttribute("success", "Aluno adicionado com sucesso!");
         } catch (IllegalStateException | IllegalArgumentException e) {
+            // Captura erros de validação ou de negócio disparados pelo serviço
             attr.addFlashAttribute("erro", e.getMessage());
         } catch (Exception e) {
             attr.addFlashAttribute("erro", "Erro ao adicionar aluno: " + e.getMessage());
@@ -158,6 +160,7 @@ public class SecretarioController {
                                     @RequestParam("file") MultipartFile file,
                                     RedirectAttributes attr) {
         try {
+            // Delega a leitura, parseamento do CSV e o cadastro em lote para a camada de serviço
             inscricaoService.importarAlunosCsv(ofertaId, file);
             attr.addFlashAttribute("success", "Arquivo CSV processado com sucesso!");
         } catch (RuntimeException e) {

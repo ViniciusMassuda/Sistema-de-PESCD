@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfessorController {
 
-    // Refatoração: Removido DAO direto e o @Autowired. Agora é usado apenas serviço e injeção por construtor.
+    // O controlador consome apenas interfaces de serviço, sem dependência direta de DAOs
     private final IProfessorService professorService;
     private final IInscricaoService inscricaoService;
     private final IOfertaService ofertaService;
@@ -227,6 +227,7 @@ public class ProfessorController {
                                            @AuthenticationPrincipal UserDetails userDetails,
                                            Model model) {
         try {
+            // Recupera as estatísticas consolidadas e as médias da turma antes de encerrar
             EstatisticasOfertaResponseDTO estatisticas = professorService.buscarEstatisticasOferta(ofertaId, userDetails.getUsername());
             
             List<Inscricao> inscricoes = inscricaoService.buscarPorOferta(ofertaService.buscarPorId(ofertaId));

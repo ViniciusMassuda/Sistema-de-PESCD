@@ -58,7 +58,7 @@ public class InscricaoService implements IInscricaoService {
         dao.deleteById(id);
     }
 
-    // Cadastra o aluno se ele for novo e cria a inscrição na oferta de forma transacional
+    // Lógica de negócio da matrícula manual encapsulada sob transação
     @Override
     @Transactional
     public void matricularAlunoManual(Long ofertaId, String nome, String email, String senha) {
@@ -68,6 +68,7 @@ public class InscricaoService implements IInscricaoService {
         // RN-2: Verifica se o usuário correspondente ao e-mail já existe no banco
         Usuario aluno = usuarioDAO.findByUsername(email).orElse(null);
 
+        // Cria o aluno com perfil padrão caso ele ainda não exista no banco
         if (aluno == null) {
             // RN-1: Se não existir, realiza o cadastro prévio com perfil ALUNO
             aluno = new Usuario();
@@ -89,7 +90,7 @@ public class InscricaoService implements IInscricaoService {
         dao.save(inscricao);
     }
 
-    // Lê o arquivo CSV, cadastra alunos novos com senha padrão (RA) e os inscreve na oferta
+    // Processamento de stream e parseamento de CSV isolado na camada de serviço
     @Override
     @Transactional
     public void importarAlunosCsv(Long ofertaId, MultipartFile file) {
@@ -118,6 +119,7 @@ public class InscricaoService implements IInscricaoService {
                     // Procura pelo aluno usando o e-mail informado
                     Usuario aluno = usuarioDAO.findByUsername(email).orElse(null);
 
+                    // Cria o aluno usando o RA como senha provisória se for um novo cadastro
                     if (aluno == null) {
                         // RN-3: Se não cadastrado, cria credenciais padrão (Username=Email, Senha=RA)
                         aluno = new Usuario();
