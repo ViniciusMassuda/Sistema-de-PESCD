@@ -30,21 +30,17 @@ import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.PlanoTrabalho;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
 @RequestMapping("/aluno")
+@RequiredArgsConstructor
 public class AlunoController {
 
-    @Autowired
-    private IAlunoService alunoService;
-
-    @Autowired
-    private UsuarioDAO usuarioDAO;
-
-    @Autowired
-    private OfertaDAO ofertaDAO;
-
-    @Autowired
-    private InscricaoDAO inscricaoDAO;
+    private final IAlunoService alunoService;
+    private final UsuarioDAO usuarioDAO;
+    private final OfertaDAO ofertaDAO;
+    private final InscricaoDAO inscricaoDAO;
 
     @GetMapping("/ofertas")
     public String listarOfertas(@AuthenticationPrincipal UserDetails userDetails,

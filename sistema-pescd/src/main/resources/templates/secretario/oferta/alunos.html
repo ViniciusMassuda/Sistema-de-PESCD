@@ -95,6 +95,11 @@
             <a th:href="@{/secretario/inscricao/{id}/detalhes(id=${ins.id})}" class="btn btn-sm btn-outline-primary py-0" th:text="#{label.viewDetails}">
               Ver Detalhes
             </a>
+            <a th:href="@{/secretario/ofertas/{oid}/alunos/excluir/{id}(oid=${oferta.id}, id=${ins.id})}" 
+               class="btn btn-sm btn-outline-danger py-0 ms-1"
+               onclick="return confirm('Deseja realmente remover este aluno desta oferta?');">
+              Remover
+            </a>
           </td>
         </tr>
         <tr th:if="${#lists.isEmpty(inscricoes)}">

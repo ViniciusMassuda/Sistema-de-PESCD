@@ -7,7 +7,7 @@ package br.ufscar.dc.dsw.sistema_pescd.controller;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IUsuarioService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,10 +16,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private IUsuarioService service;
+    private final IUsuarioService service;
 
     @GetMapping("/home")
     public String home() {

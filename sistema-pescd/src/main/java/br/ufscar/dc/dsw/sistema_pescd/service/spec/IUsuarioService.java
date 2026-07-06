@@ -23,6 +23,8 @@ public interface IUsuarioService {
 
     // Contrato para o método da S.01 que filtra e traz apenas os Professores do sistema
     List<Usuario> buscarProfessores();
+
+    Usuario buscarPorUsername(String username);
 }
 
 

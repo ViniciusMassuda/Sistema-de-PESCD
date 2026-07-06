@@ -8,28 +8,23 @@ import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.domain.PlanoTrabalho;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
 @Order(1)
+@RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
-    @Autowired
-    private UsuarioDAO usuarioDAO;
-
-    @Autowired
-    private OfertaDAO ofertaDAO;
-
-    @Autowired
-    private InscricaoDAO inscricaoDAO;
-
-    @Autowired
-    private PlanoTrabalhoDAO planoTrabalhoDAO;
+    private final UsuarioDAO usuarioDAO;
+    private final OfertaDAO ofertaDAO;
+    private final InscricaoDAO inscricaoDAO;
+    private final PlanoTrabalhoDAO planoTrabalhoDAO;
 
     @Override
     public void run(String... args) throws Exception {

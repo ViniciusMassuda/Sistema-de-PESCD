@@ -12,9 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional(readOnly = false)
+@RequiredArgsConstructor
 public class UsuarioService implements IUsuarioService {
+
+    private final UsuarioDAO dao;
+    private final PasswordEncoder encoder;
 
     // Filtra a tabela de usuários e retorna apenas quem possui o perfil de Professor.
     // É usado pelo SecretarioController para preencher o <select> do formulário de cadastro.
@@ -23,11 +29,6 @@ public class UsuarioService implements IUsuarioService {
         return dao.findByRoleIn(
                 List.of(Usuario.Role.PROFESSOR));
     }
-    @Autowired
-    private UsuarioDAO dao;
-
-    @Autowired
-    private PasswordEncoder encoder;
 
     // OPERAÇÕES PADRÕES DE MANUTENÇÃO (CRUD)
 
@@ -52,5 +53,11 @@ public class UsuarioService implements IUsuarioService {
     @Transactional(readOnly = true)
     public List<Usuario> buscarSecretariosEProfessores() {
         return dao.findByRoleIn(Arrays.asList(Usuario.Role.SECRETARIO, Usuario.Role.PROFESSOR));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Usuario buscarPorUsername(String username) {
+        return dao.findByUsername(username).orElse(null);
     }
 }

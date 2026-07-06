@@ -7,7 +7,6 @@ package br.ufscar.dc.dsw.sistema_pescd.controller;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IOfertaService;
 import br.ufscar.dc.dsw.sistema_pescd.service.spec.IInscricaoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,14 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 public class IndexController {
 
-    @Autowired
-    private IOfertaService ofertaService;
-
-    @Autowired
-    private IInscricaoService inscricaoService;
+    private final IOfertaService ofertaService;
+    private final IInscricaoService inscricaoService;
 
     @GetMapping("/")
     public String index(Model model) {
@@ -41,5 +40,11 @@ public class IndexController {
     public String login() {
         // Apenas mostra a tela de login.
         return "login";
+    }
+
+    @GetMapping("/logout")
+    public String logout() {
+        // Renderiza a página de confirmação de logout (solução definitiva contra CSRF)
+        return "logout-confirm";
     }
 }

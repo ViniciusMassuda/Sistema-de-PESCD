@@ -12,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.time.LocalDateTime;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class OfertaService implements IOfertaService {
 
-    @Autowired
-    private OfertaDAO dao;
+    private final OfertaDAO dao;
 
 
     // Aciona o repositório customizado para retornar a lista de ofertas do banco.
@@ -60,5 +62,10 @@ public class OfertaService implements IOfertaService {
             // 3. Salva a oferta atualizada no banco de dados
             dao.save(oferta);
         }
+    }
+
+    @Override
+    public List<Oferta> buscarPorProfessorResponsavel(Long professorId) {
+        return dao.findByProfessorResponsavelId(professorId);
     }
 }

@@ -1,60 +1,61 @@
 package br.ufscar.dc.dsw.sistema_pescd.controller;
 
-import br.ufscar.dc.dsw.sistema_pescd.dao.InscricaoDAO;
-import br.ufscar.dc.dsw.sistema_pescd.dao.OfertaDAO;
-import br.ufscar.dc.dsw.sistema_pescd.dao.UsuarioDAO;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Inscricao.StatusAluno;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Oferta;
 import br.ufscar.dc.dsw.sistema_pescd.domain.Usuario;
-import org.springframework.beans.factory.annotation.Autowired;
+import br.ufscar.dc.dsw.sistema_pescd.dto.AcaoInscricaoRequestDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dto.EncerrarOfertaRequestDTO;
+import br.ufscar.dc.dsw.sistema_pescd.dto.EstatisticasOfertaResponseDTO;
+import br.ufscar.dc.dsw.sistema_pescd.service.spec.IInscricaoService;
+import br.ufscar.dc.dsw.sistema_pescd.service.spec.IOfertaService;
+import br.ufscar.dc.dsw.sistema_pescd.service.spec.IProfessorService;
+import br.ufscar.dc.dsw.sistema_pescd.service.spec.IUsuarioService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/professor")
+@RequiredArgsConstructor
 public class ProfessorController {
 
-    @Autowired
-    private InscricaoDAO inscricaoDAO;
-
-    @Autowired
-    private UsuarioDAO usuarioDAO;
-
-    @Autowired
-    private OfertaDAO ofertaDAO;
+    private final IProfessorService professorService;
+    private final IInscricaoService inscricaoService;
+    private final IOfertaService ofertaService;
+    private final IUsuarioService usuarioService;
 
     @GetMapping("/lista-alunos")
     public String listaAlunos(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        List<Inscricao> vinculados = inscricaoDAO.findByProfessorVinculado(professor.getId());
+        Usuario professor = usuarioService.buscarPorUsername(userDetails.getUsername());
+        List<Inscricao> vinculados = inscricaoService.buscarPorProfessorVinculado(professor.getId());
         model.addAttribute("inscricoes", vinculados);
         model.addAttribute("professorLogadoId", professor.getId());
-        // PR.03: ofertas do responsável para botão de encerramento
-        model.addAttribute("ofertasResponsavel", ofertaDAO.findByProfessorResponsavelId(professor.getId()));
+        model.addAttribute("ofertasResponsavel", ofertaService.buscarPorProfessorResponsavel(professor.getId()));
         return "professor/lista-alunos";
     }
 
     @GetMapping("/aprovar-plano/{inscricaoId}")
     public String exibirTelaAprovarPlano(@PathVariable Long inscricaoId,
-                                        @AuthenticationPrincipal UserDetails userDetails,
-                                        Model model) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
+                                         @AuthenticationPrincipal UserDetails userDetails,
+                                         Model model) {
+        Inscricao inscricao = inscricaoService.buscarPorId(inscricaoId);
+        if (inscricao == null) {
+            return "redirect:/professor/lista-alunos?erro=inscricao_nao_encontrada";
+        }
         
-        // rng-5: impede aprovacao se oferta ja concluida
         if (inscricao.getOferta().isEncerradaSecretario()) {
             return "redirect:/professor/lista-alunos?erro=oferta_concluida";
         }
 
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
+        Usuario professor = usuarioService.buscarPorUsername(userDetails.getUsername());
         if (inscricao.getPlanoTrabalho() == null || 
             !inscricao.getPlanoTrabalho().getProfessorSupervisor().getId().equals(professor.getId())) {
             return "redirect:/professor/lista-alunos?erro=nao_supervisor";
@@ -70,30 +71,32 @@ public class ProfessorController {
     public String processarAprovarPlano(@RequestParam("inscricaoId") Long inscricaoId,
                                         @RequestParam("parecerPlano") String parecerPlano,
                                         @AuthenticationPrincipal UserDetails userDetails) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5: trava para oferta encerrada
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=acesso_negado";
-
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!inscricao.getPlanoTrabalho().getProfessorSupervisor().getId().equals(professor.getId())) {
+        try {
+            AcaoInscricaoRequestDTO request = new AcaoInscricaoRequestDTO();
+            request.setInscricaoId(inscricaoId);
+            request.setParecer(parecerPlano);
+            professorService.aprovarPlano(request, userDetails.getUsername());
+            return "redirect:/professor/lista-alunos?sucesso=plano_aprovado";
+        } catch (IllegalStateException | IllegalArgumentException e) {
             return "redirect:/professor/lista-alunos?erro=acesso_negado";
         }
-        inscricao.setParecerPlano(parecerPlano);
-        inscricao.setStatus(StatusAluno.PLANO_APROVADO);
-        inscricaoDAO.save(inscricao);
-        return "redirect:/professor/lista-alunos?sucesso=plano_aprovado";
     }
 
     @GetMapping("/aprovar-relatorio/{inscricaoId}")
     public String exibirTelaAprovarRelatorio(@PathVariable Long inscricaoId, 
-                                            @AuthenticationPrincipal UserDetails userDetails,
-                                            Model model) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=oferta_concluida";
+                                             @AuthenticationPrincipal UserDetails userDetails,
+                                             Model model) {
+        Inscricao inscricao = inscricaoService.buscarPorId(inscricaoId);
+        if (inscricao == null) {
+            return "redirect:/professor/lista-alunos?erro=inscricao_nao_encontrada";
+        }
+        if (inscricao.getOferta().isEncerradaSecretario()) {
+            return "redirect:/professor/lista-alunos?erro=oferta_concluida";
+        }
 
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!inscricao.getPlanoTrabalho().getProfessorSupervisor().getId().equals(professor.getId())) {
+        Usuario professor = usuarioService.buscarPorUsername(userDetails.getUsername());
+        if (inscricao.getPlanoTrabalho() == null ||
+            !inscricao.getPlanoTrabalho().getProfessorSupervisor().getId().equals(professor.getId())) {
             return "redirect:/professor/lista-alunos?erro=nao_supervisor";
         }
         if (inscricao.getStatus() != StatusAluno.RELATORIO_ENVIADO) {
@@ -109,31 +112,32 @@ public class ProfessorController {
                                             @RequestParam("frequencia") Integer frequencia,
                                             @RequestParam("nota") String nota,
                                             @AuthenticationPrincipal UserDetails userDetails) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=acesso_negado";
-
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!inscricao.getPlanoTrabalho().getProfessorSupervisor().getId().equals(professor.getId())) {
+        try {
+            AcaoInscricaoRequestDTO request = new AcaoInscricaoRequestDTO();
+            request.setInscricaoId(inscricaoId);
+            request.setParecer(parecerRelatorio);
+            request.setFrequencia(frequencia);
+            request.setNota(nota);
+            professorService.aprovarRelatorio(request, userDetails.getUsername());
+            return "redirect:/professor/lista-alunos?sucesso=relatorio_aprovado";
+        } catch (IllegalStateException | IllegalArgumentException e) {
             return "redirect:/professor/lista-alunos?erro=acesso_negado";
         }
-        inscricao.setParecerRelatorioSupervisor(parecerRelatorio);
-        inscricao.setFrequenciaSupervisor(frequencia);
-        inscricao.setNotaSupervisor(nota);
-        inscricao.setStatus(StatusAluno.RELATORIO_APROVADO_SUPERVISOR);
-        inscricaoDAO.save(inscricao);
-        return "redirect:/professor/lista-alunos?sucesso=relatorio_aprovado";
     }
 
     @GetMapping("/concluir-relatorio/{inscricaoId}")
     public String exibirTelaConcluirRelatorio(@PathVariable Long inscricaoId, 
-                                             @AuthenticationPrincipal UserDetails userDetails,
-                                             Model model) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=oferta_concluida";
+                                              @AuthenticationPrincipal UserDetails userDetails,
+                                              Model model) {
+        Inscricao inscricao = inscricaoService.buscarPorId(inscricaoId);
+        if (inscricao == null) {
+            return "redirect:/professor/lista-alunos?erro=inscricao_nao_encontrada";
+        }
+        if (inscricao.getOferta().isEncerradaSecretario()) {
+            return "redirect:/professor/lista-alunos?erro=oferta_concluida";
+        }
 
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
+        Usuario professor = usuarioService.buscarPorUsername(userDetails.getUsername());
         if (!inscricao.getOferta().getProfessorResponsavel().getId().equals(professor.getId())) {
             return "redirect:/professor/lista-alunos?erro=nao_responsavel";
         }
@@ -150,31 +154,32 @@ public class ProfessorController {
                                              @RequestParam("frequenciaResponsavel") Integer frequenciaResponsavel,
                                              @RequestParam("notaResponsavel") String notaResponsavel,
                                              @AuthenticationPrincipal UserDetails userDetails) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=acesso_negado";
-
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!inscricao.getOferta().getProfessorResponsavel().getId().equals(professor.getId())) {
+        try {
+            AcaoInscricaoRequestDTO request = new AcaoInscricaoRequestDTO();
+            request.setInscricaoId(inscricaoId);
+            request.setParecer(parecerResponsavel);
+            request.setFrequencia(frequenciaResponsavel);
+            request.setNota(notaResponsavel);
+            professorService.concluirRelatorio(request, userDetails.getUsername());
+            return "redirect:/professor/lista-alunos?sucesso=relatorio_concluido";
+        } catch (IllegalStateException | IllegalArgumentException e) {
             return "redirect:/professor/lista-alunos?erro=acesso_negado";
         }
-        inscricao.setParecerRelatorioResponsavel(parecerResponsavel);
-        inscricao.setFrequenciaResponsavel(frequenciaResponsavel);
-        inscricao.setNotaResponsavel(notaResponsavel);
-        inscricao.setStatus(StatusAluno.CONCLUIDO_RESPONSAVEL);
-        inscricaoDAO.save(inscricao);
-        return "redirect:/professor/lista-alunos?sucesso=relatorio_concluido";
     }
 
     @GetMapping("/avaliar-documentacao/{inscricaoId}")
     public String exibirTelaAvaliarDocumentacao(@PathVariable Long inscricaoId, 
-                                               @AuthenticationPrincipal UserDetails userDetails,
-                                               Model model) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=oferta_concluida";
+                                                @AuthenticationPrincipal UserDetails userDetails,
+                                                Model model) {
+        Inscricao inscricao = inscricaoService.buscarPorId(inscricaoId);
+        if (inscricao == null) {
+            return "redirect:/professor/lista-alunos?erro=inscricao_nao_encontrada";
+        }
+        if (inscricao.getOferta().isEncerradaSecretario()) {
+            return "redirect:/professor/lista-alunos?erro=oferta_concluida";
+        }
 
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
+        Usuario professor = usuarioService.buscarPorUsername(userDetails.getUsername());
         if (!inscricao.getOferta().getProfessorResponsavel().getId().equals(professor.getId())) {
             return "redirect:/professor/lista-alunos?erro=nao_responsavel";
         }
@@ -191,20 +196,17 @@ public class ProfessorController {
                                                @RequestParam("frequenciaResponsavel") Integer frequenciaResponsavel,
                                                @RequestParam("notaResponsavel") String notaResponsavel,
                                                @AuthenticationPrincipal UserDetails userDetails) {
-        Inscricao inscricao = inscricaoDAO.findById(inscricaoId).orElseThrow();
-        // rng-5
-        if (inscricao.getOferta().isEncerradaSecretario()) return "redirect:/professor/lista-alunos?erro=acesso_negado";
-
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!inscricao.getOferta().getProfessorResponsavel().getId().equals(professor.getId())) {
+        try {
+            AcaoInscricaoRequestDTO request = new AcaoInscricaoRequestDTO();
+            request.setInscricaoId(inscricaoId);
+            request.setParecer(parecerResponsavel);
+            request.setFrequencia(frequenciaResponsavel);
+            request.setNota(notaResponsavel);
+            professorService.avaliarDocumentacao(request, userDetails.getUsername());
+            return "redirect:/professor/lista-alunos?sucesso=documentacao_avaliada";
+        } catch (IllegalStateException | IllegalArgumentException e) {
             return "redirect:/professor/lista-alunos?erro=acesso_negado";
         }
-        inscricao.setParecerRelatorioResponsavel(parecerResponsavel);
-        inscricao.setFrequenciaResponsavel(frequenciaResponsavel);
-        inscricao.setNotaResponsavel(notaResponsavel);
-        inscricao.setStatus(StatusAluno.CONCLUIDO_RESPONSAVEL);
-        inscricaoDAO.save(inscricao);
-        return "redirect:/professor/lista-alunos?sucesso=documentacao_avaliada";
     }
 
     // PR.03 – Encerrar Oferta
@@ -214,56 +216,29 @@ public class ProfessorController {
     public String exibirTelaEncerrarOferta(@PathVariable Long ofertaId,
                                            @AuthenticationPrincipal UserDetails userDetails,
                                            Model model) {
-        Oferta oferta = ofertaDAO.findById(ofertaId).orElseThrow();
+        try {
+            EstatisticasOfertaResponseDTO estatisticas = professorService.buscarEstatisticasOferta(ofertaId, userDetails.getUsername());
+            
+            List<Inscricao> inscricoes = inscricaoService.buscarPorOferta(ofertaService.buscarPorId(ofertaId));
+            Oferta oferta = ofertaService.buscarPorId(ofertaId);
+            
+            model.addAttribute("oferta", oferta);
+            model.addAttribute("inscricoes", inscricoes);
+            model.addAttribute("mediaFrequencia", String.format(Locale.US, "%.1f", estatisticas.getMediaFrequencia()));
+            model.addAttribute("contagemNotas", estatisticas.getContagemNotas());
+            model.addAttribute("viaEstagio", estatisticas.getCreditosViaEstagio());
+            model.addAttribute("viaDocumentacao", estatisticas.getCreditosViaDocumentacao());
+            model.addAttribute("totalAlunos", estatisticas.getTotalAlunos());
 
-        if (oferta.isEncerradaSecretario()) {
-            return "redirect:/professor/lista-alunos?erro=oferta_ja_encerrada";
+            return "professor/encerrar-oferta";
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            String erro = "acesso_negado";
+            if (e.getMessage().contains("encerrada pelo secretário")) erro = "oferta_ja_encerrada";
+            else if (e.getMessage().contains("concluída pelo professor")) erro = "oferta_ja_concluida_professor";
+            else if (e.getMessage().contains("responsável")) erro = "nao_responsavel";
+            else if (e.getMessage().contains("status CONCLUIDO_RESPONSAVEL")) erro = "alunos_pendentes";
+            return "redirect:/professor/lista-alunos?erro=" + erro;
         }
-        if (oferta.isConcluidaProfessor()) {
-            return "redirect:/professor/lista-alunos?erro=oferta_ja_concluida_professor";
-        }
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!oferta.getProfessorResponsavel().getId().equals(professor.getId())) {
-            return "redirect:/professor/lista-alunos?erro=nao_responsavel";
-        }
-        // PR.03: todos os alunos devem estar CONCLUIDO_RESPONSAVEL
-        List<Inscricao> inscricoes = inscricaoDAO.findByOfertaId(ofertaId);
-        boolean todosConluidos = inscricoes.stream()
-                .allMatch(i -> i.getStatus() == StatusAluno.CONCLUIDO_RESPONSAVEL);
-        if (!todosConluidos) {
-            return "redirect:/professor/lista-alunos?erro=alunos_pendentes";
-        }
-
-        // PR.03: estatísticas consolidadas
-        double mediaFrequencia = inscricoes.stream()
-                .filter(i -> i.getFrequenciaResponsavel() != null)
-                .mapToInt(Inscricao::getFrequenciaResponsavel)
-                .average()
-                .orElse(0.0);
-
-        Map<String, Long> contagemNotas = new HashMap<>();
-        for (String nota : List.of("A", "B", "C", "D", "E")) {
-            long count = inscricoes.stream()
-                    .filter(i -> nota.equals(i.getNotaResponsavel()))
-                    .count();
-            contagemNotas.put(nota, count);
-        }
-        long viaEstagio = inscricoes.stream()
-                .filter(i -> i.getPlanoTrabalho() != null)
-                .count();
-        long viaDocumentacao = inscricoes.stream()
-                .filter(i -> i.getDocumentacaoComprobatoria() != null)
-                .count();
-
-        model.addAttribute("oferta", oferta);
-        model.addAttribute("inscricoes", inscricoes);
-        model.addAttribute("mediaFrequencia", String.format("%.1f", mediaFrequencia));
-        model.addAttribute("contagemNotas", contagemNotas);
-        model.addAttribute("viaEstagio", viaEstagio);
-        model.addAttribute("viaDocumentacao", viaDocumentacao);
-        model.addAttribute("totalAlunos", inscricoes.size());
-
-        return "professor/encerrar-oferta";
     }
 
     // PR.03: persiste lições aprendidas e marca oferta como concluída pelo professor
@@ -271,28 +246,14 @@ public class ProfessorController {
     public String processarEncerrarOferta(@RequestParam("ofertaId") Long ofertaId,
                                           @RequestParam("licoesAprendidas") String licoesAprendidas,
                                           @AuthenticationPrincipal UserDetails userDetails) {
-        Oferta oferta = ofertaDAO.findById(ofertaId).orElseThrow();
-
-        if (oferta.isEncerradaSecretario() || oferta.isConcluidaProfessor()) {
+        try {
+            EncerrarOfertaRequestDTO req = new EncerrarOfertaRequestDTO();
+            req.setOfertaId(ofertaId);
+            req.setDescricaoLicoesAprendidas(licoesAprendidas);
+            professorService.encerrarOferta(req, userDetails.getUsername());
+            return "redirect:/professor/lista-alunos?sucesso=oferta_encerrada";
+        } catch (IllegalStateException | IllegalArgumentException e) {
             return "redirect:/professor/lista-alunos?erro=acesso_negado";
         }
-        Usuario professor = usuarioDAO.findByUsername(userDetails.getUsername()).orElseThrow();
-        if (!oferta.getProfessorResponsavel().getId().equals(professor.getId())) {
-            return "redirect:/professor/lista-alunos?erro=acesso_negado";
-        }
-        // PR.03: revalida status antes de persistir
-        List<Inscricao> inscricoes = inscricaoDAO.findByOfertaId(ofertaId);
-        boolean todosConcluidos = inscricoes.stream()
-                .allMatch(i -> i.getStatus() == StatusAluno.CONCLUIDO_RESPONSAVEL);
-        if (!todosConcluidos) {
-            return "redirect:/professor/lista-alunos?erro=alunos_pendentes";
-        }
-
-        oferta.setLicoesAprendidas(licoesAprendidas);
-        oferta.setConcluidaProfessor(true);
-        oferta.setDataConcluidaProfessor(LocalDateTime.now());
-        ofertaDAO.save(oferta);
-
-        return "redirect:/professor/lista-alunos?sucesso=oferta_encerrada";
     }
 }

@@ -19,10 +19,11 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class AlunoServiceImpl implements IAlunoService {
-    
     private final InscricaoDAO inscricaoDAO;
     private final OfertaDAO ofertaDAO;
     private final UsuarioDAO usuarioDAO;
@@ -33,7 +34,6 @@ public class AlunoServiceImpl implements IAlunoService {
     private final PlanoTrabalhoMapper planoTrabalhoMapper;
     private final RelatorioDAO relatorioDAO;
     private final RelatorioMapper relatorioMapper;
-    
     @Value("${upload.path}")
     private String uploadPath;
 
