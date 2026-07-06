@@ -17,4 +17,6 @@ public interface IOfertaService {
     void excluir(Long id);
 
     void encerrar(Long id, String usuarioLogado);
+
+    List<Oferta> buscarPorProfessorResponsavel(Long professorId);
 }

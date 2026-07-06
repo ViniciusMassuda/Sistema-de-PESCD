@@ -13,6 +13,16 @@ public interface IInscricaoService {
 
     // Contrato para o método da S.03 que busca a lista de alunos de uma oferta para o painel
     List<Inscricao> buscarPorOferta(Oferta oferta);
+
+    List<Inscricao> buscarPorProfessorVinculado(Long professorId);
+    
+    Inscricao buscarPorId(Long id);
+    
+    void excluir(Long id);
+
+    void matricularAlunoManual(Long ofertaId, String nome, String email, String senha);
+
+    void importarAlunosCsv(Long ofertaId, org.springframework.web.multipart.MultipartFile file);
 }
 
 
